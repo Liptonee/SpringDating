@@ -93,6 +93,8 @@ public class UserService {
         return userMapper.toProfileDto(userRepository.save(userEntity));
     }
 
+
+
     @Transactional(readOnly = true)
     public List<GetUserDto> getByPreferences(Long curUserId, Short quantity) {
         if (!selfProvider.getObject().getNotReadyFields(curUserId).isEmpty()) {
@@ -110,6 +112,7 @@ public class UserService {
         return userRepository.findByPreferences(curUserId, gender, ageMin, ageMax, city, pageable)
                 .stream().map(userMapper::toGetDto).toList();
     }
+
 
     @Transactional(readOnly = true)
     public Set<String> getNotReadyFields(Long curUserId) {
