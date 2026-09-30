@@ -18,7 +18,7 @@ public class DeckService {
     private final PhotoService photoService;
     private final UserService userService;
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<CardDto> getDeck(Long curUserId, Short quantity) throws MinioException {
         List<GetUserDto> eligibleUsers = userService.getByPreferences(curUserId, quantity);
         List<CardDto> cards = new ArrayList<>();
