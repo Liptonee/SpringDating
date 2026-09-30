@@ -16,7 +16,9 @@ public class LoggingAspect {
     @Around("execution(* org.petproject.dating_backend.user.UserService.*(..)) || "
             + "execution(* org.petproject.dating_backend.auth.AuthController.*(..)) ||"
             + "execution(* org.petproject.dating_backend.photo.PhotoService.*(..)) ||"
-            + "execution(* org.petproject.dating_backend.deck.DeckService.*(..))")
+            + "execution(* org.petproject.dating_backend.deck.DeckService.*(..)) ||"
+            + "execution(* org.petproject.dating_backend.swipe.SwipeService.*(..))"
+    )
     public Object logAround(ProceedingJoinPoint pjp) throws Throwable{
         String method = pjp.getSignature().toShortString();
         Object[] args = pjp.getArgs();
