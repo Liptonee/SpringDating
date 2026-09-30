@@ -8,6 +8,8 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -104,7 +106,8 @@ public class UserService {
         Short ageMax = user.getPreferredAgeMax();
         String city = user.getCity();
 
-        return userRepository.findByPreferences(curUserId, gender, ageMin, ageMax, city, quantity)
+        Pageable pageable = PageRequest.of(0, quantity);
+        return userRepository.findByPreferences(curUserId, gender, ageMin, ageMax, city, pageable)
                 .stream().map(userMapper::toGetDto).toList();
     }
 
