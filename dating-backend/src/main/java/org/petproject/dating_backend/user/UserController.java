@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Set;
+
 @RestController
 @RequestMapping("/api/users")
 @Tag(name = "Контроллер пользователей",
@@ -58,6 +60,17 @@ public class UserController {
             @RequestBody @Valid ProfileUserDto patchProfileUserDto
     ) {
         return ResponseEntity.ok(userService.patchCurrentUser(curUserId, patchProfileUserDto));
+    }
+
+    @Operation(summary = "Возращает названия незаполненных, но необходимых для полного функционала, полей",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponse(responseCode = "200", description = "Успех",
+            content = @Content(schema = @Schema(implementation = Set.class)))
+    @GetMapping("/me/completeness")
+    public ResponseEntity<Set<String>> getNotReadyFields(
+            @AuthenticationPrincipal Long curUserId
+    ) {
+        return ResponseEntity.ok(userService.getNotReadyFields(curUserId));
     }
 
 
