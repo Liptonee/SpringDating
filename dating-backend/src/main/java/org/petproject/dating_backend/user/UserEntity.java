@@ -43,14 +43,17 @@ public class UserEntity {
     @Column(length = 10)
     private UserGender gender;
 
-    @Column(name = "preferred_age_min", nullable = false)
+    @Column(name = "preferred_age_min")
     private Short preferredAgeMin;
 
-    @Column(name = "preferred_age_max", nullable = false)
+    @Column(name = "preferred_age_max")
     private Short preferredAgeMax;
 
     @Column(name = "password_hash", nullable = false, length = 100)
     private String passwordHash;
+
+    @Column(name = "ready_for_deck", nullable = false)
+    private Boolean readyForDeck;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

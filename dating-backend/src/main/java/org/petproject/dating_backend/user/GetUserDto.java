@@ -29,12 +29,12 @@ public record GetUserDto(
 
         @Schema(description = "Возраст пользователя (от 18 до 100)",
                 example = "24")
-        Integer age,
+        Short age,
 
 
         @Schema(description = "ID главного фото, оно отображается на карточке",
                 example = "17")
-        String mainPhotoId,
+        Long mainPhotoId,
 
 
         @Schema(description = "Город пользователя (от 2 до 40 символов)",

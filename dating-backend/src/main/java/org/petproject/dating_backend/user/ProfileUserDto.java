@@ -52,7 +52,7 @@ public record ProfileUserDto(
 
         @Schema(description = "ID главного фото, оно отображается на карточке",
                 example = "17")
-        String mainPhotoId,
+        Long mainPhotoId,
 
 
         @Schema(description = "Город пользователя (от 2 до 40 символов)",
@@ -77,6 +77,12 @@ public record ProfileUserDto(
                 example = "59")
         @Max(100)
         @Min(18)
-        Short preferredAgeMax
+        Short preferredAgeMax,
+
+        @Schema(description = "Готов ли пользователь к получению колоды/выдаче в колоде",
+                example = "true")
+        Boolean readyForDeck
+
+
 ) {
 }
