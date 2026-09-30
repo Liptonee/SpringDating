@@ -1,9 +1,13 @@
 package org.petproject.dating_backend.swipe;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "swipes")
+@Getter
+@Setter
 public class SwipeEntity {
 
     @Id
@@ -18,6 +22,6 @@ public class SwipeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name  = "action", nullable = false, length = 20)
-    SwipeAction action;
+    private SwipeAction action;
 
 }
