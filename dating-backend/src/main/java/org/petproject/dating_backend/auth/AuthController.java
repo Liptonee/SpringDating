@@ -86,11 +86,11 @@ public class AuthController {
             security = @SecurityRequirement(name = "none")
     )
     @ApiResponse(responseCode = "201", description = "Регистрация прошла успешно",
-            content = @Content(schema = @Schema(implementation = UserDto.class)))
+            content = @Content(schema = @Schema(implementation = ProfileUserDto.class)))
     @ApiResponse(responseCode = "409", description = "Email уже используется",
             content = @Content(schema = @Schema(implementation = ErrorDto.class)))
     @PostMapping("/register")
-    public ResponseEntity<UserDto> register(@Valid @RequestBody RegisterRequestDto request) {
+    public ResponseEntity<ProfileUserDto> register(@Valid @RequestBody RegisterRequestDto request) {
         if (userRepository.existsByEmail(request.email())) {
             throw new ConflictException("Такой email уже используется", 409);
         }
@@ -102,7 +102,7 @@ public class AuthController {
         user.setGender(request.gender());
         user.setRole(UserRole.USER);
         userRepository.save(user);
-        return ResponseEntity.status(201).body(userMapper.toDto(user));
+        return ResponseEntity.status(201).body(userMapper.toProfileDto(user));
     }
 
 
