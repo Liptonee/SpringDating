@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -25,7 +26,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
       );
    }
 
-   default UserEntity findByIdOrThrow(Long id) throws NotFoundException{
+   default UserEntity findByIdOrElseThrow(Long id) throws NotFoundException{
       return findById(id).orElseThrow(
               () -> new NotFoundException("Пользователь не найден", 404)
       );
@@ -35,4 +36,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
    @Query("select u from UserEntity u where u.id = :id")
    Optional<UserEntity> findByIdForUpdate(@Param("id") Long id);
 
+   //todo
+   List<UserEntity> findByPreferences(Long curUserId, UserGender gender, Short ageMin, Short ageMax, String city, Short limit);
 }
