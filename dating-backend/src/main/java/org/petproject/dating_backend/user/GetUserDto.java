@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
         """)
 public record GetUserDto(
 
-        @Schema(description = "ID пользователя. При запросе обязательно null, при ответе присутствует",
+        @Schema(description = "ID пользователя.",
                 example = "213")
         Long id,
 
