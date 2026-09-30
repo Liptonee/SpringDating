@@ -60,8 +60,8 @@ public class PhotoService {
                 ? "image/png"
                 : file.getContentType();
 
-        //Блокировка строки, чтобы избежать race condition при проверке количества фото
-        userRepository.lockById(curUserId)
+        //Блокировка строки, чтобы избежать race condition
+        UserEntity user = userRepository.findByIdForUpdate(curUserId)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден", 404));
         validate(file, curUserId, size, contentType);
 
@@ -97,7 +97,11 @@ public class PhotoService {
         }
 
         try {
-            return photoRepository.save(photoEntity).getId();
+            Long photoId = photoRepository.save(photoEntity).getId();
+            if (user.getMainPhotoId() == null) {
+                user.setMainPhotoId(photoId);
+            }
+            return photoId;
         } catch (Exception e) {
             try {
                 minio.removeObject(RemoveObjectArgs.builder()
@@ -147,6 +151,21 @@ public class PhotoService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = CACHE_NAME, key = "'single:url'+ #photoId")
+    public String getSinglePhotoUrl(Long photoId) throws MinioException {
+        PhotoEntity photoEntity = photoRepository.findByIdOrThrow(photoId);
+
+        return minio.getPresignedObjectUrl(
+                GetPresignedObjectUrlArgs.builder()
+                        .method(Http.Method.GET)
+                        .bucket(BUCKET_NAME)
+                        .object(photoEntity.getObjectName())
+                        .expiry(6, TimeUnit.HOURS)
+                        .build()
+        );
+    }
+
+    @Transactional(readOnly = true)
     @Cacheable(value = CACHE_NAME, key = "'list:' + #userId")
     public List<PhotoDto> getListPhotos(Long userId) {
         return photoRepository.findByUserIdOrderByUploadedAtDesc(userId)
@@ -185,6 +204,9 @@ public class PhotoService {
             }
     )
     public void deletePhoto(Long curUserId, Long photoId) throws MinioException {
+        UserEntity user = userRepository.findByIdForUpdate(curUserId)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден", 404));
+
         PhotoEntity photo = photoRepository.findById(photoId).orElse(null);
 
         if (photo == null) return;
@@ -193,7 +215,19 @@ public class PhotoService {
             throw new ForbiddenException("Вы не можете удалить чужое фото", 403);
         }
 
+        boolean wasMain = Objects.equals(user.getMainPhotoId(), photoId);
+
         photoRepository.delete(photo);
+
+        if (wasMain) {
+            photoRepository.findByUserIdOrderByUploadedAtDesc(curUserId)
+                    .stream()
+                    .findFirst()
+                    .ifPresentOrElse(
+                            present -> user.setMainPhotoId(present.getId()),
+                            () -> user.setMainPhotoId(null)
+                    );
+        }
 
         try {
             minio.removeObject(
