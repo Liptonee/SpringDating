@@ -32,7 +32,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
    }
 
    @Lock(LockModeType.PESSIMISTIC_WRITE)
-   @Query("select u.id from UserEntity u where u.id = :id")
-   Optional<Long> lockById(@Param("id") Long id);
+   @Query("select u from UserEntity u where u.id = :id")
+   Optional<UserEntity> findByIdForUpdate(@Param("id") Long id);
 
 }

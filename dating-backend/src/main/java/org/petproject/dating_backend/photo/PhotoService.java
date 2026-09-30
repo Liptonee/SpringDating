@@ -18,10 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -54,6 +51,7 @@ public class PhotoService {
         this.photoMapper = photoMapper;
     }
 
+
     @Transactional
     @CacheEvict(value = CACHE_NAME, key = "'list:' + #curUserId")
     public Long uploadPhoto(Long curUserId, MultipartFile file) throws MinioException {
@@ -71,13 +69,11 @@ public class PhotoService {
                 ? "untitled"
                 : file.getOriginalFilename();
         String extension = switch (contentType) {
-            case "image/png"  -> ".png";
+            case "image/png" -> ".png";
             case "image/webp" -> ".webp";
-            default           -> ".jpg";
+            default -> ".jpg";
         };
         String objectName = UUID.randomUUID() + extension;
-
-        UserEntity user = userRepository.getReferenceById(curUserId);
 
         PhotoEntity photoEntity = new PhotoEntity();
         photoEntity.setUser(user);
@@ -134,7 +130,7 @@ public class PhotoService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = CACHE_NAME, key = "'single:'+ #photoId")
+    @Cacheable(value = CACHE_NAME, key = "'single:dto'+ #photoId")
     public PhotoDto getSinglePhoto(Long photoId) throws MinioException {
         PhotoEntity photoEntity = photoRepository.findByIdOrThrow(photoId);
 
@@ -184,7 +180,8 @@ public class PhotoService {
     @Caching(
             evict = {
                     @CacheEvict(value = CACHE_NAME, key = "'list:' + #curUserId"),
-                    @CacheEvict(value = CACHE_NAME, key = "'single:' + #photoId")
+                    @CacheEvict(value = CACHE_NAME, key = "'single:dto' + #photoId"),
+                    @CacheEvict(value = CACHE_NAME, key = "'single:url' + #photoId")
             }
     )
     public void deletePhoto(Long curUserId, Long photoId) throws MinioException {
