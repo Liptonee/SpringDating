@@ -229,6 +229,10 @@ public class PhotoService {
                     );
         }
 
+        if (user.getMainPhotoId() == null) user.setReadyForDeck(false);
+
+        userRepository.save(user);
+
         try {
             minio.removeObject(
                     RemoveObjectArgs.builder()
