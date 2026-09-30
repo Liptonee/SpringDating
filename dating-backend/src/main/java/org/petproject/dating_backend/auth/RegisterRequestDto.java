@@ -28,13 +28,6 @@ public record RegisterRequestDto(
         String firstName,
 
 
-        @Schema(description = "Пол пользователя",
-                example = "MALE",
-                requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull
-        UserGender gender,
-
-
         @Schema(description = "Пароль (не менее 6 символов)",
                 example = "SecurePass123!",
                 requiredMode = Schema.RequiredMode.REQUIRED)

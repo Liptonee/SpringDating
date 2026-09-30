@@ -80,6 +80,10 @@ public class UserService {
         return userMapper.toProfileDto(userRepository.save(userEntity));
     }
 
-
+    //todo
+//    public List<UserEntity> getByPreferences(Long curUserId, Short quantity) {
+//
+//
+//    }
 }
 

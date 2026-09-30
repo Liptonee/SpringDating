@@ -99,7 +99,6 @@ public class AuthController {
         user.setEmail(request.email());
         user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setFirstName(request.firstName());
-        user.setGender(request.gender());
         user.setRole(UserRole.USER);
         userRepository.save(user);
         return ResponseEntity.status(201).body(userMapper.toProfileDto(user));
