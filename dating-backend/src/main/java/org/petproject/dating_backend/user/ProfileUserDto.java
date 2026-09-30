@@ -7,10 +7,10 @@ import jakarta.validation.constraints.*;
         Все данные о пользователе.
         Используется для PATCH (PATCH /users/me) методов в качестве указания того, что нужно изменить,
         в данном случае id указывать нельзя.
-        Также используется как ответ GET методов (GET /users/me),
+        Также используется как ответ GET метода (GET /users/me) для получения профиля текущего пользователя,
         в данном случае id присутствует.
         """)
-public record UserDto(
+public record ProfileUserDto(
 
         @Schema(description = "ID пользователя. При запросе обязательно null, при ответе присутствует",
                 example = "213")
@@ -31,30 +31,6 @@ public record UserDto(
         String email,
 
 
-        @Schema(description = "Город пользователя (от 2 до 40 символов)",
-                example = "Москва")
-        @Size(max = 40, min = 2)
-        String city,
-
-
-        @Schema(description = "Возраст пользователя (от 18 до 100)",
-                example = "24")
-        @Max(100)
-        @Min(18)
-        Integer age,
-
-        @Schema(description = "Нижняя граница диапазона поиска по возрасту",
-                example = "20")
-        @Max(100)
-        @Min(18)
-        Short preferredAgeMin,
-
-        @Schema(description = "Верхняя граница диапазона поиска по возрасту",
-                example = "59")
-        @Max(100)
-        @Min(18)
-        Short preferredAgeMax,
-
         @Schema(description = "Краткое описание пользователя (от 0 до 127 символов)",
                 example = "Краткое писание пользователя")
         @Size(max = 127)
@@ -67,9 +43,40 @@ public record UserDto(
         String fullAbout,
 
 
+        @Schema(description = "Возраст пользователя (от 18 до 100)",
+                example = "24")
+        @Max(100)
+        @Min(18)
+        Short age,
+
+
+        @Schema(description = "ID главного фото, оно отображается на карточке",
+                example = "17")
+        String mainPhotoId,
+
+
+        @Schema(description = "Город пользователя (от 2 до 40 символов)",
+                example = "Москва")
+        @Size(max = 40, min = 2)
+        String city,
+
+
         @Schema(description = "Пол пользователя",
                 example = "FEMALE")
-        UserGender gender
+        UserGender gender,
 
+
+        @Schema(description = "Нижняя граница диапазона поиска по возрасту",
+                example = "20")
+        @Max(100)
+        @Min(18)
+        Short preferredAgeMin,
+
+
+        @Schema(description = "Верхняя граница диапазона поиска по возрасту",
+                example = "59")
+        @Max(100)
+        @Min(18)
+        Short preferredAgeMax
 ) {
 }

@@ -1,0 +1,3 @@
+ALTER TABLE users
+    ALTER COLUMN age TYPE SMALLINT
+        USING age::SMALLINT;

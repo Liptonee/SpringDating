@@ -21,14 +21,8 @@ public class UserEntity {
     @Column(name = "first_name", nullable = false, length = 30)
     private String firstName;
 
-    @Column(name = "password_hash", nullable = false, length = 100)
-    private String passwordHash;
-
     @Column(nullable = false, unique = true, length = 50)
     private String email;
-
-    @Column(length = 40)
-    private String city;
 
     @Column(name = "full_about",length = 512)
     private String fullAbout;
@@ -37,7 +31,13 @@ public class UserEntity {
     private String shortAbout;
 
     @Column()
-    private Integer age;
+    private Short age;
+
+    @Column(name = "main_photo_id")
+    private Long mainPhotoId;
+
+    @Column(length = 40)
+    private String city;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 10, nullable = false)
@@ -48,6 +48,9 @@ public class UserEntity {
 
     @Column(name = "preferred_age_max", nullable = false)
     private Short preferredAgeMax;
+
+    @Column(name = "password_hash", nullable = false, length = 100)
+    private String passwordHash;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

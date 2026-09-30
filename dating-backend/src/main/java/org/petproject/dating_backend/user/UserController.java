@@ -27,9 +27,9 @@ public class UserController {
     @Operation(summary = "Возвращает текущего пользователя",
             security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "200", description = "Успех",
-            content = @Content(schema = @Schema(implementation = UserDto.class)))
+            content = @Content(schema = @Schema(implementation = ProfileUserDto.class)))
     @GetMapping("/me")
-    public ResponseEntity<UserDto> getCurrentUser(
+    public ResponseEntity<ProfileUserDto> getCurrentUser(
             @AuthenticationPrincipal Long curUserId
     ) {
         return ResponseEntity.ok(userService.getCurrentUser(curUserId));
@@ -39,9 +39,9 @@ public class UserController {
     @Operation(summary = "Возвращает запрашиваемого пользователя",
             security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "200", description = "Успех",
-            content = @Content(schema = @Schema(implementation = UserDto.class)))
+            content = @Content(schema = @Schema(implementation = GetUserDto.class)))
     @GetMapping("/{userId}")
-    public ResponseEntity<UserDto> getUser(
+    public ResponseEntity<GetUserDto> getUser(
             @AuthenticationPrincipal Long curUserId,
             @PathVariable Long userId
     ) {
@@ -51,13 +51,13 @@ public class UserController {
     @Operation(summary = "Изменяет данные пользователя",
             security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "200", description = "Успех",
-            content = @Content(schema = @Schema(implementation = UserDto.class)))
+            content = @Content(schema = @Schema(implementation = ProfileUserDto.class)))
     @PatchMapping("/me")
-    public ResponseEntity<UserDto> patchCurrentUser(
+    public ResponseEntity<ProfileUserDto> patchCurrentUser(
             @AuthenticationPrincipal Long curUserId,
-            @RequestBody @Valid UserDto patchUserDto
+            @RequestBody @Valid ProfileUserDto patchProfileUserDto
     ) {
-        return ResponseEntity.ok(userService.patchCurrentUser(curUserId, patchUserDto));
+        return ResponseEntity.ok(userService.patchCurrentUser(curUserId, patchProfileUserDto));
     }
 
 
