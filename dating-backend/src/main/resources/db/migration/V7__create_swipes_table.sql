@@ -1,0 +1,6 @@
+CREATE TABLE swipes (
+    id BIGSERIAL PRIMARY KEY,
+    from_id BIGINT NOT NULL,
+    to_id BIGINT NOT NULL,
+    action VARCHAR(20) NOT NULL
+)
