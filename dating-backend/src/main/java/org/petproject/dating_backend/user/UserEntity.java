@@ -40,7 +40,7 @@ public class UserEntity {
     private String city;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 10, nullable = false)
+    @Column(length = 10)
     private UserGender gender;
 
     @Column(name = "preferred_age_min", nullable = false)
