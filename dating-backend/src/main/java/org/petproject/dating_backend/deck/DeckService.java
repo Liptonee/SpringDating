@@ -24,7 +24,7 @@ public class DeckService {
         List<CardDto> cards = new ArrayList<>();
 
         for (GetUserDto user : eligibleUsers) {
-            String url = photoService.getSinglePhotoUrl(user.mainPhotoId());
+            String url = photoService.getMainPhotoUrl(curUserId);
             cards.add(new CardDto(
                     user.id(),
                     url,
