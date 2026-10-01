@@ -7,6 +7,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 @Component
 @Aspect
@@ -24,6 +25,7 @@ public class LoggingAspect {
         Object[] args = pjp.getArgs();
 
         if (args.length < 7) {
+
             log.info("→ {} | args={}", method, Arrays.toString(args));
         } else log.info("→ {} with more then 7 args", method);
 
@@ -31,8 +33,12 @@ public class LoggingAspect {
 
         try{
             Object result = pjp.proceed();
-            log.info("← {} | time={}ms | result={}",
-                    method, System.currentTimeMillis() - start, result);
+            long elapsed = System.currentTimeMillis() - start;
+            if (result instanceof Collection<?> c) {
+                log.info("← {} | time={}ms | result.size={}", method, elapsed, c.size());
+            } else {
+                log.info("← {} | time={}ms", method, elapsed);
+            }
             return result;
         } catch (Throwable th) {
             log.warn("✕ {} | time={}ms | error={}",
