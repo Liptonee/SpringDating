@@ -94,7 +94,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<GetUserDto> getByPreferences(Long curUserId, Short quantity) {
-        if (getNotReadyFields(curUserId).isEmpty()) {
+        if (!getNotReadyFields(curUserId).isEmpty()) {
             throw new ForbiddenException("Профиль пользователя не готов к получению колоды", 403);
         }
         UserEntity user = userRepository.findByIdOrElseThrow(curUserId);
