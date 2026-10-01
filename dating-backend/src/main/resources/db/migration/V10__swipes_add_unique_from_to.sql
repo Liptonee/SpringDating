@@ -1,0 +1,1 @@
+ALTER TABLE swipes ADD CONSTRAINT uq_swipes_from_to UNIQUE (from_id, to_id);

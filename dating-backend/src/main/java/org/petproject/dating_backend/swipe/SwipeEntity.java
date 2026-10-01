@@ -4,8 +4,14 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Instant;
+
 @Entity
-@Table(name = "swipes")
+@Table(name = "swipes",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uq_swipes_from_to",
+                columnNames = {"from_id", "to_id"}
+        ))
 @Getter
 @Setter
 public class SwipeEntity {
@@ -23,5 +29,8 @@ public class SwipeEntity {
     @Enumerated(EnumType.STRING)
     @Column(name  = "action", nullable = false, length = 20)
     private SwipeAction action;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt = Instant.now();
 
 }
