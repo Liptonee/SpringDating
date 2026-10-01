@@ -17,12 +17,11 @@ public class SwipeController {
     private final SwipeService swipeService;
 
     @PostMapping()
-    public ResponseEntity<Void> swipe(
+    public ResponseEntity<SwipeResponseDto> swipe(
             @AuthenticationPrincipal Long curUserId,
             @RequestBody @Valid SwipeDto swipeDto
     ){
-        swipeService.swipe(curUserId, swipeDto);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(swipeService.swipe(curUserId, swipeDto));
     }
 
 }

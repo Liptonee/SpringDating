@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.common.exception.BadRequestException;
 import org.petproject.dating_backend.common.exception.ConflictException;
 import org.petproject.dating_backend.common.exception.NotFoundException;
+import org.petproject.dating_backend.match.MatchService;
 import org.petproject.dating_backend.user.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,9 +15,10 @@ public class SwipeService {
 
     private final SwipeRepository swipeRepository;
     private final UserRepository userRepository;
+    private final MatchService matchService;
 
     @Transactional
-    public void swipe(Long curUserId, SwipeDto swipeDto){
+    public SwipeResponseDto swipe(Long curUserId, SwipeDto swipeDto){
         if (curUserId.equals(swipeDto.toId())) {
             throw new BadRequestException("Нельзя свайпам самого себя", 400);
         }
@@ -31,11 +33,12 @@ public class SwipeService {
         swipeEntity.setFromId(curUserId);
         swipeEntity.setToId(swipeDto.toId());
         swipeEntity.setAction(swipeDto.action());
-
-
-
-        //todo matchService and chatService and notificationService
         swipeRepository.save(swipeEntity);
+
+        boolean isMatched = matchService.doMatch(curUserId, swipeDto.toId(), swipeDto.action());
+
+        return new SwipeResponseDto(isMatched);
+
 
     }
 
