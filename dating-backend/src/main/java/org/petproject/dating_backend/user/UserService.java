@@ -25,7 +25,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PhotoService photoService;
-    private final ObjectProvider<UserService> selfProvider;
     public static final String CACHE_NAME = "users";
 
     @Transactional(readOnly = true)
@@ -85,7 +84,7 @@ public class UserService {
         userEntity.setPreferredAgeMax(newMax);
 
 
-        if (selfProvider.getObject().getNotReadyFields(curUserId).isEmpty()) {
+        if (getNotReadyFields(curUserId).isEmpty()) {
             userEntity.setReadyForDeck(true);
         }
 
@@ -95,7 +94,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<GetUserDto> getByPreferences(Long curUserId, Short quantity) {
-        if (!selfProvider.getObject().getNotReadyFields(curUserId).isEmpty()) {
+        if (getNotReadyFields(curUserId).isEmpty()) {
             throw new ForbiddenException("Профиль пользователя не готов к получению колоды", 403);
         }
         UserEntity user = userRepository.findByIdOrElseThrow(curUserId);
