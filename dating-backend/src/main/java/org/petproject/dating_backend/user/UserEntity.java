@@ -2,12 +2,14 @@ package org.petproject.dating_backend.user;
 
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 
 @Entity
 @Table(name = "users")
-@Data
+@Setter
+@Getter
 public class UserEntity {
 
     @Id
