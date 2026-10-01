@@ -3,10 +3,6 @@ package org.petproject.dating_backend.user;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.petproject.dating_backend.photo.PhotoEntity;
-
-
-import java.util.List;
 
 
 @Entity
@@ -24,17 +20,14 @@ public class UserEntity {
     @Column(nullable = false, unique = true, length = 50)
     private String email;
 
-    @Column(name = "full_about",length = 512)
+    @Column(name = "full_about", length = 512)
     private String fullAbout;
 
-    @Column(name = "short_about",length = 127)
+    @Column(name = "short_about", length = 127)
     private String shortAbout;
 
     @Column()
     private Short age;
-
-    @Column(name = "main_photo_id")
-    private Long mainPhotoId;
 
     @Column(length = 40)
     private String city;
@@ -58,11 +51,5 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private UserRole role;
-
-    @OneToMany(mappedBy = "user",
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
-            orphanRemoval = true)
-    private List<PhotoEntity> photoList;
 
 }

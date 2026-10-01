@@ -4,7 +4,6 @@ package org.petproject.dating_backend.photo;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.petproject.dating_backend.user.UserEntity;
 
 import java.time.Instant;
 
@@ -21,9 +20,8 @@ public class PhotoEntity {
     @Column(name = "object_name", nullable = false)
     private String objectName;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Column(name = "original_name", nullable = false)
     private String originalName;
@@ -33,6 +31,9 @@ public class PhotoEntity {
 
     @Column(name = "size", nullable = false)
     private Long size;
+
+    @Column(name = "is_main", nullable = false)
+    private Boolean isMain = false;
 
     @Column(name = "uploaded_at", nullable = false)
     private Instant uploadedAt = Instant.now();
