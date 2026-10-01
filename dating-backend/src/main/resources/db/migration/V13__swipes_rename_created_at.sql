@@ -1,0 +1,1 @@
+ALTER TABLE swipes RENAME COLUMN created_ad TO created_at;
