@@ -17,8 +17,8 @@ public class LoggingAspect {
             + "execution(* org.petproject.dating_backend.auth.AuthController.*(..)) ||"
             + "execution(* org.petproject.dating_backend.photo.PhotoService.*(..)) ||"
             + "execution(* org.petproject.dating_backend.deck.DeckService.*(..)) ||"
-            + "execution(* org.petproject.dating_backend.swipe.SwipeService.*(..))"
-    )
+            + "execution(* org.petproject.dating_backend.swipe.SwipeService.*(..)) ||"
+            + "execution(* org.petproject.dating_backend.match.MatchService.*(..)) ")
     public Object logAround(ProceedingJoinPoint pjp) throws Throwable{
         String method = pjp.getSignature().toShortString();
         Object[] args = pjp.getArgs();
