@@ -1,0 +1,3 @@
+ALTER TABLE swipes
+    ADD CONSTRAINT fk_swipes_from FOREIGN KEY (from_id) REFERENCES users(id) ON DELETE CASCADE,
+    ADD CONSTRAINT fk_swipes_to   FOREIGN KEY (to_id)   REFERENCES users(id) ON DELETE CASCADE;
