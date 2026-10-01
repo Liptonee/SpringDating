@@ -100,6 +100,7 @@ public class AuthController {
         user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setFirstName(request.firstName());
         user.setRole(UserRole.USER);
+        user.setReadyForDeck(false);
         userRepository.save(user);
         return ResponseEntity.status(201).body(userMapper.toProfileDto(user));
     }
