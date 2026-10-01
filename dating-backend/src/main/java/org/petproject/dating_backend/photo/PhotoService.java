@@ -76,7 +76,7 @@ public class PhotoService {
         String objectName = UUID.randomUUID() + extension;
 
         PhotoEntity photoEntity = new PhotoEntity();
-        photoEntity.setUser(user);
+        photoEntity.setUserId(user.getId());
         photoEntity.setObjectName(objectName);
         photoEntity.setOriginalName(originalName);
         photoEntity.setContentType(contentType);
@@ -97,11 +97,10 @@ public class PhotoService {
         }
 
         try {
-            Long photoId = photoRepository.save(photoEntity).getId();
-            if (user.getMainPhotoId() == null) {
-                user.setMainPhotoId(photoId);
+            if (!photoRepository.existsByUserIdAndIsMainTrue(curUserId)) {
+                photoEntity.setIsMain(true);
             }
-            return photoId;
+            return photoRepository.save(photoEntity).getId();
         } catch (Exception e) {
             try {
                 minio.removeObject(RemoveObjectArgs.builder()
@@ -211,27 +210,24 @@ public class PhotoService {
 
         if (photo == null) return;
 
-        if (!photo.getUser().getId().equals(curUserId)) {
+        if (!photo.getUserId().equals(curUserId)) {
             throw new ForbiddenException("Вы не можете удалить чужое фото", 403);
         }
 
-        boolean wasMain = Objects.equals(user.getMainPhotoId(), photoId);
+        boolean wasMain = photo.getIsMain();
 
         photoRepository.delete(photo);
 
+        boolean wasSet = false;
         if (wasMain) {
-            photoRepository.findByUserIdOrderByUploadedAtDesc(curUserId)
-                    .stream()
-                    .findFirst()
-                    .ifPresentOrElse(
-                            present -> user.setMainPhotoId(present.getId()),
-                            () -> user.setMainPhotoId(null)
-                    );
+            List<PhotoEntity> list =  photoRepository.findByUserIdOrderByUploadedAtDesc(curUserId);
+            if (!list.isEmpty()){
+                list.getFirst().setIsMain(true);
+                wasSet = true;
+            }
         }
 
-        if (user.getMainPhotoId() == null) user.setReadyForDeck(false);
-
-        userRepository.save(user);
+        if (wasMain && !wasSet) user.setReadyForDeck(false);
 
         try {
             minio.removeObject(
@@ -245,4 +241,24 @@ public class PhotoService {
             throw e;
         }
     }
+
+    @Transactional(readOnly = true)
+    public boolean hasMainPhoto(Long userId) {
+        return photoRepository.existsByUserIdAndIsMainTrue(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public String getMainPhotoUrl(Long userId) throws MinioException {
+        PhotoEntity photoEntity = photoRepository.findMainPhoto(userId);
+
+        return minio.getPresignedObjectUrl(
+                GetPresignedObjectUrlArgs.builder()
+                        .method(Http.Method.GET)
+                        .bucket(BUCKET_NAME)
+                        .object(photoEntity.getObjectName())
+                        .expiry(6, TimeUnit.HOURS)
+                        .build()
+        );
+    }
+
 }
