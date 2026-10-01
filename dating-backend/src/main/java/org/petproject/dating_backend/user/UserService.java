@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.common.exception.BadRequestException;
 import org.petproject.dating_backend.common.exception.ConflictException;
 import org.petproject.dating_backend.common.exception.ForbiddenException;
+import org.petproject.dating_backend.photo.PhotoService;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -23,6 +24,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PhotoService photoService;
     private final ObjectProvider<UserService> selfProvider;
     public static final String CACHE_NAME = "users";
 
@@ -69,9 +71,6 @@ public class UserService {
         if (patchProfileUserDto.fullAbout() != null) {
             userEntity.setFullAbout(patchProfileUserDto.fullAbout());
         }
-        if (patchProfileUserDto.mainPhotoId() != null) {
-            userEntity.setMainPhotoId(patchProfileUserDto.mainPhotoId());
-        }
 
         Short newMin = patchProfileUserDto.preferredAgeMin() != null
                 ? patchProfileUserDto.preferredAgeMin()
@@ -92,7 +91,6 @@ public class UserService {
 
         return userMapper.toProfileDto(userRepository.save(userEntity));
     }
-
 
 
     @Transactional(readOnly = true)
@@ -123,7 +121,7 @@ public class UserService {
         if (user.getAge() == null) resultSet.add("age");
         if (user.getCity() == null) resultSet.add("city");
         if (user.getShortAbout() == null) resultSet.add("short about");
-        if (user.getMainPhotoId() == null) resultSet.add("main photo");
+        if (!photoService.hasMainPhoto(curUserId)) resultSet.add("main photo");
         if (user.getPreferredAgeMax() == null) resultSet.add("preferred age max");
         if (user.getPreferredAgeMin() == null) resultSet.add("preferred age min");
 
