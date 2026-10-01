@@ -3,6 +3,7 @@ package org.petproject.dating_backend.match;
 import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.swipe.SwipeAction;
 import org.petproject.dating_backend.swipe.SwipeRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +24,11 @@ public class MatchService {
             MatchEntity matchEntity = new MatchEntity();
             matchEntity.setFirstUserId(Math.min(fromUserId, toUserId));
             matchEntity.setSecondUserId(Math.max(fromUserId, toUserId));
-            matchRepository.save(matchEntity);
+            try {
+                matchRepository.saveAndFlush(matchEntity);
+            } catch (DataIntegrityViolationException e) {
+                return true;
+            }
 
             isMatched = true;
 
