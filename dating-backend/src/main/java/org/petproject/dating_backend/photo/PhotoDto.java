@@ -21,6 +21,9 @@ public record PhotoDto(
         @Schema(description = "Размер файла в байтах", example = "245123")
         Long size,
 
+        @Schema(description = "Указывает главное ли данное фото", example = "true")
+        boolean isMain,
+
         @Schema(description = "Само фото в виде временной ссылки",
                 example = "http://localhost:9000/photos/users/1/a1b2c3d4.jpg?X-Amz-Signature=...")
         String url,

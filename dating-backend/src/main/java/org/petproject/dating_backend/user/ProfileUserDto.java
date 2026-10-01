@@ -50,10 +50,6 @@ public record ProfileUserDto(
         Short age,
 
 
-        @Schema(description = "ID главного фото, оно отображается на карточке",
-                example = "17")
-        Long mainPhotoId,
-
 
         @Schema(description = "Город пользователя (от 2 до 40 символов)",
                 example = "Москва")
