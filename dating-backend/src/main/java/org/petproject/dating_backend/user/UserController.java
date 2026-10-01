@@ -46,10 +46,9 @@ public class UserController {
             content = @Content(schema = @Schema(implementation = GetUserDto.class)))
     @GetMapping("/{userId}")
     public ResponseEntity<GetUserDto> getUser(
-            @AuthenticationPrincipal Long curUserId,
             @PathVariable Long userId
     ) {
-        return ResponseEntity.ok(userService.getUser(curUserId, userId));
+        return ResponseEntity.ok(userService.getUser(userId));
     }
 
     @Operation(summary = "Изменяет данные пользователя",

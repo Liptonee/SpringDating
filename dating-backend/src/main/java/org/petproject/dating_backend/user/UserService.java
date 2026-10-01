@@ -36,7 +36,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     @Cacheable(value = CACHE_NAME, key = "#userId")
-    public GetUserDto getUser(Long curUserId, Long userId) {
+    public GetUserDto getUser(Long userId) {
         return userMapper.toGetDto(userRepository.findByIdOrElseThrow(userId));
     }
 
