@@ -13,16 +13,13 @@ public record SwipeHistoryDto(
 
         @Schema(description = "ID пользователя, которого свайпают",
                 example = "213")
-        @NotNull
         Long toId,
 
         @Schema(description = "Лайк/Дизлайк",
                 example = "LIKE")
-        @NotNull
         SwipeAction action,
 
         @Schema(description = "Когда был совершён свайп", example = "2026-09-25T10:15:30Z")
-        @NotNull
         Instant created_at
 
 ) {
