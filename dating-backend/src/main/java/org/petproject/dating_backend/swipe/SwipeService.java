@@ -34,7 +34,8 @@ public class SwipeService {
         }
         if (swipeRepository.existsByFromIdAndToId(curUserId, swipeRequestDto.toId())) {
             log.debug("Duplicate swipe from {} to {}", curUserId, swipeRequestDto.toId());
-            return new SwipeResponseDto(false);
+            boolean alreadyMatched = matchService.existsBetween(curUserId, swipeRequestDto.toId());
+            return new SwipeResponseDto(alreadyMatched);
         }
 
         SwipeEntity swipeEntity = new SwipeEntity();
@@ -45,7 +46,9 @@ public class SwipeService {
         try {
             swipeRepository.saveAndFlush(swipeEntity);
         } catch (DataIntegrityViolationException e) {
-            return new SwipeResponseDto(false);
+            log.debug("Duplicate swipe from {} to {}", curUserId, swipeRequestDto.toId());
+            boolean alreadyMatched = matchService.existsBetween(curUserId, swipeRequestDto.toId());
+            return new SwipeResponseDto(alreadyMatched);
         }
 
         boolean isMatched = matchService.doMatch(curUserId, swipeRequestDto.toId(), swipeRequestDto.action());
