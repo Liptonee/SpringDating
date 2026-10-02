@@ -8,15 +8,17 @@ import jakarta.validation.constraints.NotNull;
         Описывает действие - свайп.
         Используется в POST /swipes
         """)
-public record SwipeDto(
+public record SwipeRequestDto(
+
         @Schema(description = "ID пользователя, которого свайпают",
                 example = "213")
         @NotNull
         Long toId,
 
-        @NotNull
         @Schema(description = "Лайк/Дизлайк",
                 example = "LIKE")
+        @NotNull
         SwipeAction action
+
 ) {
 }

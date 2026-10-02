@@ -1,0 +1,29 @@
+package org.petproject.dating_backend.swipe;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
+
+import java.time.Instant;
+
+@Schema(description = """
+        Модель свайпа для истории свайпов.
+        Используется в GET /swipes
+        """)
+public record SwipeHistoryDto(
+
+        @Schema(description = "ID пользователя, которого свайпают",
+                example = "213")
+        @NotNull
+        Long toId,
+
+        @Schema(description = "Лайк/Дизлайк",
+                example = "LIKE")
+        @NotNull
+        SwipeAction action,
+
+        @Schema(description = "Когда был совершён свайп", example = "2026-09-25T10:15:30Z")
+        @NotNull
+        Instant created_at
+
+) {
+}
