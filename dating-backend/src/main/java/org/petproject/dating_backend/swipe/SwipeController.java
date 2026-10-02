@@ -38,7 +38,7 @@ public class SwipeController {
             security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "200", description = "Успех",
             content = @Content(schema = @Schema(implementation = PageResponse.class)))
-    @GetMapping("/swipes")
+    @GetMapping("/swipes/history")
     public PageResponse<SwipeHistoryDto> getHistory(
             @AuthenticationPrincipal Long curUserId,
             @RequestParam(required = false) SwipeAction action,
@@ -47,12 +47,7 @@ public class SwipeController {
         return PageResponse.from(swipeService.getHistory(curUserId, action, pageable));
     }
 
-    //кто меня лайкнул
-    //вся история c фильтрами like/dislike
-    //unswipe
-    //
-    //имеющиеся мэтчи
-    //unmatch
+
 
 
 }
