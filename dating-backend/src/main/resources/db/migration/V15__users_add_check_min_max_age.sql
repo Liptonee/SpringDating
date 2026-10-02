@@ -1,0 +1,1 @@
+ALTER TABLE users ADD CONSTRAINT check_min_max_age CHECK ( users.preferred_age_min <= users.preferred_age_max );
