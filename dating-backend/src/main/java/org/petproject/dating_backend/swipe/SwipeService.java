@@ -7,35 +7,40 @@ import org.petproject.dating_backend.common.exception.NotFoundException;
 import org.petproject.dating_backend.match.MatchService;
 import org.petproject.dating_backend.user.UserRepository;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class SwipeService {
 
+
     private final SwipeRepository swipeRepository;
     private final UserRepository userRepository;
     private final MatchService matchService;
+    private final SwipeMapper swipeMapper;
 
     @Transactional
-    public SwipeResponseDto swipe(Long curUserId, SwipeDto swipeDto) {
-        if (curUserId.equals(swipeDto.toId())) {
+    public SwipeResponseDto swipe(Long curUserId, SwipeRequestDto swipeRequestDto) {
+        if (curUserId.equals(swipeRequestDto.toId())) {
             throw new BadRequestException("Нельзя свайпам самого себя", 400);
         }
-        if (swipeRepository.existsByFromIdAndToId(curUserId, swipeDto.toId())) {
-            log.debug("Duplicate swipe from {} to {}", curUserId, swipeDto.toId());
-            return new SwipeResponseDto(false);
-        }
-        if (!userRepository.existsById(swipeDto.toId())) {
+        if (!userRepository.existsById(swipeRequestDto.toId())) {
             throw new NotFoundException("Пользователь не найден", 404);
+        }
+        if (swipeRepository.existsByFromIdAndToId(curUserId, swipeRequestDto.toId())) {
+            log.debug("Duplicate swipe from {} to {}", curUserId, swipeRequestDto.toId());
+            return new SwipeResponseDto(false);
         }
 
         SwipeEntity swipeEntity = new SwipeEntity();
         swipeEntity.setFromId(curUserId);
-        swipeEntity.setToId(swipeDto.toId());
-        swipeEntity.setAction(swipeDto.action());
+        swipeEntity.setToId(swipeRequestDto.toId());
+        swipeEntity.setAction(swipeRequestDto.action());
 
         try {
             swipeRepository.saveAndFlush(swipeEntity);
@@ -43,12 +48,14 @@ public class SwipeService {
             return new SwipeResponseDto(false);
         }
 
-        boolean isMatched = matchService.doMatch(curUserId, swipeDto.toId(), swipeDto.action());
+        boolean isMatched = matchService.doMatch(curUserId, swipeRequestDto.toId(), swipeRequestDto.action());
 
         return new SwipeResponseDto(isMatched);
 
-
     }
 
-
+    @Transactional
+    public Page<SwipeHistoryDto> getHistory(Long curUserId, SwipeAction action, Pageable pageable) {
+        return swipeRepository.findAllForHistory(curUserId, action, pageable).map(swipeMapper::toHistoryDto);
+    }
 }
