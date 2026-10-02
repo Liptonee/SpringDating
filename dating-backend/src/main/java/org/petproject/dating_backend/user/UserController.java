@@ -17,8 +17,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/api/users")
-@Tag(name = "Контроллер пользователей",
-        description = "Просмотр пользователей, а также редактирование информации текущего пользователя")
+@Tag(name = "Пользователи", description = "Профиль, редактирование, готовность к колоде")
 public class UserController {
 
     private final UserService userService;

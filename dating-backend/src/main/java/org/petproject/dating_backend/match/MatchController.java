@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.common.dto.PageResponse;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/matches")
 @RequiredArgsConstructor
+@Tag(name = "Матчи", description = "Просмотр взаимных лайков (матчей)")
 public class MatchController {
 
     private final MatchService matchService;

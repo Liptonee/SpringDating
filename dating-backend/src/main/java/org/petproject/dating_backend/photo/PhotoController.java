@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.common.exception.ErrorDto;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api")
 @RestController
+@Tag(name = "Фото", description = "Загрузка, просмотр и удаление фотографий")
 public class PhotoController {
 
 
