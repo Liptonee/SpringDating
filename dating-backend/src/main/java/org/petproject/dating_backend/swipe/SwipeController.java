@@ -62,7 +62,16 @@ public class SwipeController {
         return PageResponse.from(swipeService.getLiked(curUserId, pageable));
     }
 
-
-
+    @Operation(summary = "Отменяет свайп. Также отменяется и мэтч.",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponse(responseCode = "204", description = "Фото успешно удалено")
+    @DeleteMapping("/swipes/{swipeId}")
+    public ResponseEntity<Void> undoSwipe(
+            @AuthenticationPrincipal Long curUserId,
+            @PathVariable() Long swipeId
+    ){
+        swipeService.undoSwipe(curUserId, swipeId);
+        return ResponseEntity.noContent().build();
+    }
 
 }

@@ -3,12 +3,14 @@ package org.petproject.dating_backend.swipe;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.petproject.dating_backend.common.exception.BadRequestException;
+import org.petproject.dating_backend.common.exception.ForbiddenException;
 import org.petproject.dating_backend.common.exception.NotFoundException;
 import org.petproject.dating_backend.match.MatchService;
 import org.petproject.dating_backend.user.UserRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,15 +59,30 @@ public class SwipeService {
 
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Page<SwipeHistoryDto> getHistory(Long curUserId, SwipeAction action, Pageable pageable) {
         return swipeRepository.findAllForHistory(curUserId, action, pageable).map(swipeMapper::toHistoryDto);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Page<SwipeHistoryDto> getLiked(Long curUserId, Pageable pageable) {
 
         return swipeRepository.findAllForLiked(curUserId, pageable).map(swipeMapper::toHistoryDto);
+
+    }
+
+
+    @Transactional
+    public void undoSwipe(Long curUserId, Long swipeId) {
+        SwipeEntity swipeEntity = swipeRepository.findById(swipeId).orElseThrow(
+                () -> new NotFoundException("Свайпа с таким id не существует", 404)
+        );
+        if (!swipeEntity.getFromId().equals(curUserId)) {
+            throw new ForbiddenException("Вы не можете отменить чужой свайп", 403);
+        }
+
+        swipeRepository.delete(swipeEntity);
+        matchService.undoMatch(swipeEntity.getFromId(), swipeEntity.getToId());
 
     }
 }
