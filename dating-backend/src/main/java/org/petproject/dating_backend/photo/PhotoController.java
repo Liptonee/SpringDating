@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/photos")
+@RequestMapping("/api")
 @RestController
 public class PhotoController {
 
@@ -43,7 +43,7 @@ public class PhotoController {
             content = @Content(schema = @Schema(implementation = ErrorDto.class)))
     @ApiResponse(responseCode = "500", description = "Ошибка при загрузке в хранилище.",
             content = @Content(schema = @Schema(implementation = ErrorDto.class)))
-    @PostMapping()
+    @PostMapping("/photos")
     public ResponseEntity<Long> uploadPhoto(
             @AuthenticationPrincipal Long curUserId,
             @RequestParam("file") MultipartFile file
@@ -58,7 +58,7 @@ public class PhotoController {
             security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "200", description = "Успех",
             content = @Content(schema = @Schema(implementation = PhotoDto.class)))
-    @GetMapping("/{photoId}")
+    @GetMapping("/photos/{photoId}")
     public ResponseEntity<PhotoDto> getSinglePhoto(
             @PathVariable Long photoId
     ) throws MinioException {
@@ -70,7 +70,7 @@ public class PhotoController {
             security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "200", description = "Успех",
             content = @Content(schema = @Schema(implementation = String.class)))
-    @GetMapping("/{photoId}/url")
+    @GetMapping("/photos/{photoId}/url")
     public ResponseEntity<String> getSinglePhotoUrl(
             @PathVariable Long photoId
     ) throws MinioException {
@@ -85,12 +85,10 @@ public class PhotoController {
             security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "200", description = "Успех",
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = PhotoDto.class))))
-    @GetMapping()
+    @GetMapping("users/{userId}/photos")
     public ResponseEntity<List<PhotoDto>> getListPhotos(
-            @AuthenticationPrincipal Long curUserId,
-            @RequestParam(value = "userId", required = false) Long userId
+            @PathVariable() Long userId
     ) {
-        userId = userId == null ? curUserId : userId;
         return ResponseEntity.ok(photoService.getListPhotos(userId));
     }
 
