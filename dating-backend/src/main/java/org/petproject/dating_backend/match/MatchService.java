@@ -1,5 +1,6 @@
 package org.petproject.dating_backend.match;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.swipe.SwipeAction;
 import org.petproject.dating_backend.swipe.SwipeRepository;
@@ -21,9 +22,7 @@ public class MatchService {
         if (swipeAction.equals(SwipeAction.LIKE)
                 && swipeRepository.existsByFromIdAndToId(toUserId, fromUserId)) {
 
-            MatchEntity matchEntity = new MatchEntity();
-            matchEntity.setFirstUserId(Math.min(fromUserId, toUserId));
-            matchEntity.setSecondUserId(Math.max(fromUserId, toUserId));
+            MatchEntity matchEntity = matchRepository.createBetween(toUserId, fromUserId);
             try {
                 matchRepository.saveAndFlush(matchEntity);
             } catch (DataIntegrityViolationException e) {
@@ -37,4 +36,7 @@ public class MatchService {
         return isMatched;
     }
 
+    public boolean existsBetween(Long fromId, @NotNull Long toId) {
+        return matchRepository.existsBetween(fromId, toId);
+    }
 }
