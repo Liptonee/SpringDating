@@ -33,11 +33,12 @@ public class SwipeController {
         return ResponseEntity.ok(swipeService.swipe(curUserId, swipeRequestDto));
     }
 
-    @Operation(summary = "Выдаёт историю свайпов." +
-            "Имеется фильтрация, пагинация. Сортировка фиксирована createdAt DESC",
+    @Operation(summary = "Выдаёт историю свайпов.",
+            description = "Имеется фильтрация, пагинация. Сортировка фиксирована createdAt DESC" +
+                    "Возращает PageResponse<SwipeHistoryDto>",
             security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "200", description = "Успех",
-            content = @Content(schema = @Schema(implementation = PageResponse.class)))
+            content = @Content(schema = @Schema(implementation = SwipeHistoryDto.class)))
     @GetMapping("/swipes/history")
     public PageResponse<SwipeHistoryDto> getHistory(
             @AuthenticationPrincipal Long curUserId,
