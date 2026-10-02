@@ -7,10 +7,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.common.dto.PageResponse;
-import org.petproject.dating_backend.swipe.SwipeHistoryDto;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,7 +29,7 @@ public class MatchController {
     public PageResponse<MatchDto> getMatches(
             @AuthenticationPrincipal Long curUserId,
             @PageableDefault(size = 20) Pageable pageable
-    ){
+    ) {
         return PageResponse.from(matchService.getMatches(curUserId, pageable));
     }
 

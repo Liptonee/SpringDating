@@ -1,7 +1,6 @@
 package org.petproject.dating_backend.swipe;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
 
 import java.time.Instant;
 

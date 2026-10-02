@@ -69,7 +69,7 @@ public class SwipeController {
     public ResponseEntity<Void> undoSwipe(
             @AuthenticationPrincipal Long curUserId,
             @PathVariable() Long swipeId
-    ){
+    ) {
         swipeService.undoSwipe(curUserId, swipeId);
         return ResponseEntity.noContent().build();
     }

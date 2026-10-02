@@ -43,10 +43,6 @@ public class MatchService {
         return matchRepository.existsBetween(fromId, toId);
     }
 
-    @Transactional
-    public void undoMatch(Long fromId, Long toId) {
-        matchRepository.deleteBetween(fromId, toId);
-    }
 
     @Transactional
     public Page<MatchDto> getMatches(Long curUserId, Pageable pageable) {
@@ -54,4 +50,10 @@ public class MatchService {
         return matchRepository.findAllBySingleUserId(curUserId, pageable).map(matchMapper::toDto);
 
     }
+
+    @Transactional
+    public void undoMatch(Long fromId, Long toId) {
+        matchRepository.deleteBetween(fromId, toId);
+    }
+
 }
