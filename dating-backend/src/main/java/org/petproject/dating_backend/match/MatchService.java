@@ -1,10 +1,11 @@
 package org.petproject.dating_backend.match;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.swipe.SwipeAction;
 import org.petproject.dating_backend.swipe.SwipeRepository;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,7 @@ public class MatchService {
 
     private final MatchRepository matchRepository;
     private final SwipeRepository swipeRepository;
+    private final MatchMapper matchMapper;
 
     @Transactional
     public boolean doMatch(Long fromUserId, Long toUserId, SwipeAction swipeAction) {
@@ -36,7 +38,8 @@ public class MatchService {
         return isMatched;
     }
 
-    public boolean existsBetween(Long fromId, @NotNull Long toId) {
+    @Transactional(readOnly = true)
+    public boolean existsBetween(Long fromId, Long toId) {
         return matchRepository.existsBetween(fromId, toId);
     }
 }

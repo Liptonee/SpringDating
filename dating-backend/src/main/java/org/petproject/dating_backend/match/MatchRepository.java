@@ -1,5 +1,7 @@
 package org.petproject.dating_backend.match;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -39,5 +41,10 @@ public interface MatchRepository extends JpaRepository<MatchEntity, Long> {
             """)
     int deleteBetween(@Param("a") Long a, @Param("b") Long b);
 
+    @Query("""
+                SELECT m FROM MatchEntity m
+                WHERE m.firstUserId = :userId OR m.secondUserId = :userId
+            """)
+    Page<MatchEntity> findAllBySingleUserId(@Param("userId") Long userId, Pageable pageable);
 
 }
