@@ -5,7 +5,6 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import org.petproject.dating_backend.user.UserGender;
 
 
 @Schema(description = "Запрос на регистрацию в систему")

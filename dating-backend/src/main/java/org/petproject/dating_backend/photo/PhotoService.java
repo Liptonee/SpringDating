@@ -18,7 +18,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -82,6 +85,10 @@ public class PhotoService {
         photoEntity.setContentType(contentType);
         photoEntity.setSize(size);
 
+        if (!photoRepository.existsByUserIdAndIsMainTrue(curUserId)) {
+            photoEntity.setIsMain(true);
+        }
+
         try (InputStream inputStream = file.getInputStream()) {
             minio.putObject(
                     PutObjectArgs.builder()
@@ -97,9 +104,6 @@ public class PhotoService {
         }
 
         try {
-            if (!photoRepository.existsByUserIdAndIsMainTrue(curUserId)) {
-                photoEntity.setIsMain(true);
-            }
             return photoRepository.save(photoEntity).getId();
         } catch (Exception e) {
             try {
@@ -220,8 +224,8 @@ public class PhotoService {
 
         boolean wasSet = false;
         if (wasMain) {
-            List<PhotoEntity> list =  photoRepository.findByUserIdOrderByUploadedAtDesc(curUserId);
-            if (!list.isEmpty()){
+            List<PhotoEntity> list = photoRepository.findByUserIdOrderByUploadedAtDesc(curUserId);
+            if (!list.isEmpty()) {
                 list.getFirst().setIsMain(true);
                 wasSet = true;
             }
@@ -249,7 +253,9 @@ public class PhotoService {
 
     @Transactional(readOnly = true)
     public String getMainPhotoUrl(Long userId) throws MinioException {
-        PhotoEntity photoEntity = photoRepository.findMainPhoto(userId);
+        PhotoEntity photoEntity = photoRepository.findMainPhoto(userId).orElseThrow(
+                () -> new NotFoundException("У пользователь нет главного фото", 404)
+        );
 
         return minio.getPresignedObjectUrl(
                 GetPresignedObjectUrlArgs.builder()

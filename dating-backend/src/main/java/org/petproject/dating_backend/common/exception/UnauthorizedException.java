@@ -1,6 +1,6 @@
 package org.petproject.dating_backend.common.exception;
 
-public class UnauthorizedException extends BusinessException{
+public class UnauthorizedException extends BusinessException {
     public UnauthorizedException(int statusCode) {
         super(statusCode);
     }

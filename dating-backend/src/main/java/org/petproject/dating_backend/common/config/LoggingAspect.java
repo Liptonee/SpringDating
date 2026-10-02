@@ -20,7 +20,7 @@ public class LoggingAspect {
             + "execution(* org.petproject.dating_backend.deck.DeckService.*(..)) ||"
             + "execution(* org.petproject.dating_backend.swipe.SwipeService.*(..)) ||"
             + "execution(* org.petproject.dating_backend.match.MatchService.*(..)) ")
-    public Object logAround(ProceedingJoinPoint pjp) throws Throwable{
+    public Object logAround(ProceedingJoinPoint pjp) throws Throwable {
         String method = pjp.getSignature().toShortString();
         Object[] args = pjp.getArgs();
 
@@ -31,7 +31,7 @@ public class LoggingAspect {
 
         long start = System.currentTimeMillis();
 
-        try{
+        try {
             Object result = pjp.proceed();
             long elapsed = System.currentTimeMillis() - start;
             if (result instanceof Collection<?> c) {

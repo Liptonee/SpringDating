@@ -27,7 +27,7 @@ public class SwipeEntity {
     private Long toId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name  = "action", nullable = false, length = 20)
+    @Column(name = "action", nullable = false, length = 20)
     private SwipeAction action;
 
     @Column(name = "created_at", nullable = false, updatable = false)

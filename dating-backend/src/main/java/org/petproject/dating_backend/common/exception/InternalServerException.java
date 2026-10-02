@@ -1,6 +1,6 @@
 package org.petproject.dating_backend.common.exception;
 
-public class InternalServerException extends RuntimeException{
+public class InternalServerException extends RuntimeException {
     public InternalServerException() {
     }
 

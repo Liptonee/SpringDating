@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -96,7 +95,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErrorDto> handleMethodNotSupported(HttpRequestMethodNotSupportedException e) {
-        log.warn("Controller doesn't supported this method",e);
+        log.warn("Controller doesn't supported this method", e);
         return ResponseEntity.status(400)
                 .body(new ErrorDto(400,
                         "Controller doesn't supported this method",
@@ -104,10 +103,9 @@ public class GlobalExceptionHandler {
     }
 
 
-
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorDto> handleHttpMessageNotReadable(HttpMessageNotReadableException e) {
-        log.warn("Undefined Bad request",e);
+        log.warn("Undefined Bad request", e);
         return ResponseEntity.status(400)
                 .body(new ErrorDto(400,
                         "Bad request",

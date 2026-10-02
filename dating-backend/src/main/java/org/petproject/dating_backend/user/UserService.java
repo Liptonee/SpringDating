@@ -5,7 +5,6 @@ import org.petproject.dating_backend.common.exception.BadRequestException;
 import org.petproject.dating_backend.common.exception.ConflictException;
 import org.petproject.dating_backend.common.exception.ForbiddenException;
 import org.petproject.dating_backend.photo.PhotoService;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -34,14 +33,14 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = CACHE_NAME, key = "#userId")
+    @Cacheable(value = CACHE_NAME, key = "'get:' + #userId")
     public GetUserDto getUser(Long userId) {
         return userMapper.toGetDto(userRepository.findByIdOrElseThrow(userId));
     }
 
     @Transactional()
     @CachePut(value = CACHE_NAME, key = "'profile:' + #curUserId")
-    @CacheEvict(value = CACHE_NAME, key = "#curUserId")
+    @CacheEvict(value = CACHE_NAME, key = "'get:' + #curUserId")
     public ProfileUserDto patchCurrentUser(Long curUserId, ProfileUserDto patchProfileUserDto) {
 
         UserEntity userEntity = userRepository.findByIdOrElseThrow(curUserId);
@@ -77,7 +76,7 @@ public class UserService {
         Short newMax = patchProfileUserDto.preferredAgeMax() != null
                 ? patchProfileUserDto.preferredAgeMax()
                 : userEntity.getPreferredAgeMax();
-        if (newMin != null && newMax != null && newMin > newMax) {
+        if (newMin != null && newMax != null && newMin <= newMax) {
             throw new BadRequestException("Минимум диапазона должен быть <= максимума", 400);
         }
         userEntity.setPreferredAgeMin(newMin);

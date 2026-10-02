@@ -1,6 +1,6 @@
 package org.petproject.dating_backend.common.exception;
 
-public class NotFoundException extends BusinessException{
+public class NotFoundException extends BusinessException {
     public NotFoundException(int statusCode) {
         super(statusCode);
     }

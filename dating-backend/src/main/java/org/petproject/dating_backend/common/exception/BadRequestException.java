@@ -1,6 +1,6 @@
 package org.petproject.dating_backend.common.exception;
 
-public class BadRequestException extends BusinessException{
+public class BadRequestException extends BusinessException {
 
     public BadRequestException(int statusCode) {
         super(statusCode);

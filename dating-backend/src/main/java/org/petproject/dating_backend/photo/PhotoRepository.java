@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PhotoRepository extends JpaRepository<PhotoEntity, Long> {
 
@@ -21,7 +22,7 @@ public interface PhotoRepository extends JpaRepository<PhotoEntity, Long> {
     }
 
     @Query("SELECT p FROM PhotoEntity p WHERE p.isMain = true AND p.userId = :userId")
-    PhotoEntity findMainPhoto(Long userId);
+    Optional<PhotoEntity> findMainPhoto(Long userId);
 
     boolean existsByUserIdAndIsMainTrue(Long userId);
 

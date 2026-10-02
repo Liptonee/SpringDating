@@ -50,7 +50,6 @@ public record ProfileUserDto(
         Short age,
 
 
-
         @Schema(description = "Город пользователя (от 2 до 40 символов)",
                 example = "Москва")
         @Size(max = 40, min = 2)

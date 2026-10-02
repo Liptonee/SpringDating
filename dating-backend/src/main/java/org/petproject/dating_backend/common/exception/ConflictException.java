@@ -1,6 +1,6 @@
 package org.petproject.dating_backend.common.exception;
 
-public class ConflictException extends BusinessException{
+public class ConflictException extends BusinessException {
     public ConflictException(int statusCode) {
         super(statusCode);
     }

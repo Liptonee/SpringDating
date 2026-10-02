@@ -16,43 +16,44 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
-   Optional<UserEntity> findByEmail(String email);
+    Optional<UserEntity> findByEmail(String email);
 
-   boolean existsByEmail(String email);
-   boolean existsByEmailAndIdNot(String email, Long id);
+    boolean existsByEmail(String email);
 
-   default UserEntity findByEmailOrThrow(String email) throws NotFoundException {
-      return findByEmail(email).orElseThrow(
-              () -> new NotFoundException("Пользователь не найден", 404)
-      );
-   }
+    boolean existsByEmailAndIdNot(String email, Long id);
 
-   default UserEntity findByIdOrElseThrow(Long id) throws NotFoundException{
-      return findById(id).orElseThrow(
-              () -> new NotFoundException("Пользователь не найден", 404)
-      );
-   }
+    default UserEntity findByEmailOrThrow(String email) throws NotFoundException {
+        return findByEmail(email).orElseThrow(
+                () -> new NotFoundException("Пользователь не найден", 404)
+        );
+    }
 
-   @Lock(LockModeType.PESSIMISTIC_WRITE)
-   @Query("select u from UserEntity u where u.id = :id")
-   Optional<UserEntity> findByIdForUpdate(@Param("id") Long id);
+    default UserEntity findByIdOrElseThrow(Long id) throws NotFoundException {
+        return findById(id).orElseThrow(
+                () -> new NotFoundException("Пользователь не найден", 404)
+        );
+    }
 
-   @Query("""
-    select u from UserEntity u
-    where u.id <> :curUserId
-      and u.age between :ageMin and :ageMax
-      and u.gender = :gender
-      and u.city = :city
-      and u.id not in (
-          select s.toId from SwipeEntity s where s.fromId = :curUserId
-      )
-""")
-   List<UserEntity> findByPreferences(
-           Long curUserId,
-           UserGender gender,
-           Short ageMin,
-           Short ageMax,
-           String city,
-           Pageable pageable
-   );
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from UserEntity u where u.id = :id")
+    Optional<UserEntity> findByIdForUpdate(@Param("id") Long id);
+
+    @Query("""
+                select u from UserEntity u
+                where u.id <> :curUserId
+                  and u.age between :ageMin and :ageMax
+                  and u.gender = :gender
+                  and u.city = :city
+                  and u.id not in (
+                      select s.toId from SwipeEntity s where s.fromId = :curUserId
+                  )
+            """)
+    List<UserEntity> findByPreferences(
+            Long curUserId,
+            UserGender gender,
+            Short ageMin,
+            Short ageMax,
+            String city,
+            Pageable pageable
+    );
 }
