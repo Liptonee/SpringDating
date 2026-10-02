@@ -42,4 +42,16 @@ public class MatchService {
     public boolean existsBetween(Long fromId, Long toId) {
         return matchRepository.existsBetween(fromId, toId);
     }
+
+    @Transactional
+    public void undoMatch(Long fromId, Long toId) {
+        matchRepository.deleteBetween(fromId, toId);
+    }
+
+    @Transactional
+    public Page<MatchDto> getMatches(Long curUserId, Pageable pageable) {
+
+        return matchRepository.findAllBySingleUserId(curUserId, pageable).map(matchMapper::toDto);
+
+    }
 }
