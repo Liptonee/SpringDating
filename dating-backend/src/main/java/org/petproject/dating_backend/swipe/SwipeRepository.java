@@ -12,13 +12,21 @@ public interface SwipeRepository extends JpaRepository<SwipeEntity, Long> {
 
 
     @Query("""
-                     SELECT s FROM SwipeEntity s
-                     WHERE (s.fromId = :userId)
-                         AND (:action IS NULL OR s.action = :action)
-                     ORDER BY s.createdAt DESC
+                SELECT s FROM SwipeEntity s
+                WHERE (s.fromId = :userId)
+                    AND (:action IS NULL OR s.action = :action)
+                ORDER BY s.createdAt DESC
             """)
     Page<SwipeEntity> findAllForHistory(@Param("userId") Long userId,
                                         @Param("action") SwipeAction action,
                                         Pageable pageable);
+
+    @Query("""
+                SELECT s FROM SwipeEntity s
+                WHERE s.toId = :userId AND s.action = SwipeAction.LIKE
+                ORDER BY s.createdAt DESC
+            """)
+    Page<SwipeEntity> findAllForLiked(@Param("userId") Long userId,
+                                      Pageable pageable);
 
 }

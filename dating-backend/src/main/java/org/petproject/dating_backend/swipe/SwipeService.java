@@ -61,4 +61,10 @@ public class SwipeService {
     public Page<SwipeHistoryDto> getHistory(Long curUserId, SwipeAction action, Pageable pageable) {
         return swipeRepository.findAllForHistory(curUserId, action, pageable).map(swipeMapper::toHistoryDto);
     }
+
+    public Page<SwipeHistoryDto> getLiked(Long curUserId, Pageable pageable) {
+
+        return swipeRepository.findAllForLiked(curUserId, pageable).map(swipeMapper::toHistoryDto);
+
+    }
 }

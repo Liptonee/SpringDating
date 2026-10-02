@@ -33,7 +33,7 @@ public class SwipeController {
         return ResponseEntity.ok(swipeService.swipe(curUserId, swipeRequestDto));
     }
 
-    @Operation(summary = "Выдаёт историю свайпов.",
+    @Operation(summary = "Выдаёт историю свайпов, т.е. те свайпы которые совершил пользователь.",
             description = "Имеется фильтрация, пагинация. Сортировка фиксирована createdAt DESC" +
                     "Возращает PageResponse<SwipeHistoryDto>",
             security = @SecurityRequirement(name = "bearerAuth"))
@@ -46,6 +46,20 @@ public class SwipeController {
             @PageableDefault(size = 20) Pageable pageable
     ) {
         return PageResponse.from(swipeService.getHistory(curUserId, action, pageable));
+    }
+
+    @Operation(summary = "Выдаёт те свайпы, в которых пользователь является целью, т.е. лайкнутым.",
+            description = "Имеется фильтрация, пагинация. Сортировка фиксирована createdAt DESC" +
+                    "Возращает PageResponse<SwipeHistoryDto>",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponse(responseCode = "200", description = "Успех",
+            content = @Content(schema = @Schema(implementation = SwipeHistoryDto.class)))
+    @GetMapping("/swipes/likes")
+    public PageResponse<SwipeHistoryDto> getLiked(
+            @AuthenticationPrincipal Long curUserId,
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
+        return PageResponse.from(swipeService.getLiked(curUserId, pageable));
     }
 
 
