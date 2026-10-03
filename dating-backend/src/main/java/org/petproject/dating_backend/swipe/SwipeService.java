@@ -7,6 +7,7 @@ import org.petproject.dating_backend.common.exception.ForbiddenException;
 import org.petproject.dating_backend.common.exception.NotFoundException;
 import org.petproject.dating_backend.match.MatchService;
 import org.petproject.dating_backend.user.UserRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +25,8 @@ public class SwipeService {
     private final UserRepository userRepository;
     private final MatchService matchService;
     private final SwipeMapper swipeMapper;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public SwipeResponseDto swipe(Long curUserId, SwipeRequestDto swipeRequestDto) {
@@ -50,6 +53,15 @@ public class SwipeService {
             log.debug("Duplicate swipe from {} to {}", curUserId, swipeRequestDto.toId());
             boolean alreadyMatched = matchService.existsBetween(curUserId, swipeRequestDto.toId());
             return new SwipeResponseDto(alreadyMatched);
+        }
+
+        if (swipeRequestDto.action().equals(SwipeAction.LIKE)) {
+            eventPublisher.publishEvent(new LikeEvent(
+                    swipeEntity.getId(),
+                    swipeEntity.getFromId(),
+                    swipeEntity.getToId(),
+                    swipeEntity.getCreatedAt()
+                    ));
         }
 
         boolean isMatched = matchService.doMatch(curUserId, swipeRequestDto.toId(), swipeRequestDto.action());
