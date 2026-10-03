@@ -3,6 +3,7 @@ package org.petproject.dating_backend.match;
 import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.swipe.SwipeAction;
 import org.petproject.dating_backend.swipe.SwipeRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,8 @@ public class MatchService {
     private final MatchRepository matchRepository;
     private final SwipeRepository swipeRepository;
     private final MatchMapper matchMapper;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public boolean doMatch(Long fromUserId, Long toUserId, SwipeAction swipeAction) {
@@ -33,7 +36,15 @@ public class MatchService {
 
             isMatched = true;
 
+            eventPublisher.publishEvent(new MatchCreatedEvent(
+                    matchEntity.getId(),
+                    matchEntity.getFirstUserId(),
+                    matchEntity.getSecondUserId(),
+                    matchEntity.getCreatedAt()
+            ));
+
         }
+
 
         return isMatched;
     }

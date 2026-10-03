@@ -27,10 +27,10 @@ public class MatchEntity {
     private Long id;
 
     @Column(name = "first_user_id", nullable = false, updatable = false)
-    Long firstUserId;
+    private Long firstUserId;
 
     @Column(name = "second_user_id", nullable = false, updatable = false)
-    Long secondUserId;
+    private Long secondUserId;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
