@@ -19,17 +19,19 @@ public class NotificationEventListener {
     public void onMatchCreated(MatchCreatedEvent event){
         notificationSender.send(event.firstUserId(),
                 "Title for match created",
-                "Congratulations! Body for match created");
+                "Congratulations! Body for match created. " +
+                        "User1=" + event.firstUserId() + "User2=" + event.secondUserId());
         notificationSender.send(event.secondUserId(),
                 "Title for match created",
-                "Congratulations! Body for match created");
+                "Congratulations! Body for match created. " +
+                        "User1=" + event.firstUserId() + "User2=" + event.secondUserId());
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onLike(LikeEvent event) {
         notificationSender.send(event.toId(),
                 "Title for like",
-                "User got a like");
+                "User got a like from user=" + event.fromId());
     }
 
 
