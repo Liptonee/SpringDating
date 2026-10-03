@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 
 @Schema(description = "Уведомление пользователя")
-public record NotificationDto(
+public record NotificationResponseDto(
 
         @Schema(description = "ID уведомления", example = "42")
         Long id,
