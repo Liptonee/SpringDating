@@ -6,7 +6,7 @@ public record LikeEvent(
 
         Long swipeId,
 
-        Long formId,
+        Long fromId,
 
         Long toId,
 
