@@ -1,11 +1,15 @@
 package org.petproject.dating_backend.notification;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.Instant;
 
 @Entity
 @Table(name = "notifications")
+@Getter
+@Setter
 public class NotificationEntity {
 
     @Id
