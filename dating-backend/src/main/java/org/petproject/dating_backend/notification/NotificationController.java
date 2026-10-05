@@ -35,6 +35,23 @@ public class NotificationController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(
+            summary = "Возвращает одно уведомление по id",
+            description = "Возвращает NotificationResponseDto. Доступно только владельцу уведомления.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponse(
+            responseCode = "200", description = "Успех",
+            content = @Content(schema = @Schema(implementation = NotificationResponseDto.class))
+    )
+    @GetMapping("/{notifId}")
+    public NotificationResponseDto getSingleNotification(
+            @AuthenticationPrincipal Long curUserId,
+            @PathVariable Long notifId
+    ) {
+        return notificationService.getSingleNotification(curUserId, notifId);
+    }
+
     @Operation(summary = "Выдаёт все уведомления",
             description = "Имеется фильтрация по непрочитанным, пагинация. Сортировка фиксирована createdAt DESC" +
                     "Возращает PageResponse<SwipeHistoryDto>",

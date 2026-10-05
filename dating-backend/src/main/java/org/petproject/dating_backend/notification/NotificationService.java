@@ -42,6 +42,19 @@ public class NotificationService {
     }
 
     @Transactional(readOnly = true)
+    public NotificationResponseDto getSingleNotification(Long curUserId, Long notifId) {
+        NotificationEntity entity = notificationRepository.findById(notifId).orElseThrow(
+                () -> new NotFoundException("Уведомления с таким id не существует", 404)
+        );
+
+        if (!entity.getUserId().equals(curUserId)) {
+            throw new ForbiddenException("Вы не можете просмотреть чужое уведомление", 403);
+        }
+
+        return notificationMapper.toResponse(entity);
+    }
+
+    @Transactional(readOnly = true)
     public Page<NotificationResponseDto> getNotifications(Long curUserId, Boolean read, Pageable pageable) {
 
         return notificationRepository.findAllByUserId(curUserId, read, pageable)
