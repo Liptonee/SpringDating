@@ -52,5 +52,13 @@ public class NotificationController {
 
     }
 
+    @Operation(summary = "Отметить все уведомления как прочитанные")
+    @ApiResponse(responseCode = "204", description = "Все уведомления успешно прочитаны")
+    @PatchMapping("/read-all")
+    public ResponseEntity<Void> markAllAsRead(@AuthenticationPrincipal Long curUserId) {
+        notificationService.markAllAsRead(curUserId);
+        return ResponseEntity.noContent().build();
+    }
+
 
 }

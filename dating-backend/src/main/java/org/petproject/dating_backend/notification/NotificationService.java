@@ -48,4 +48,10 @@ public class NotificationService {
                 .map(notificationMapper::toResponse);
 
     }
+
+    @Transactional
+    public void markAllAsRead(Long curUserId) {
+        notificationRepository.markAllAsRead(curUserId);
+    }
+
 }
