@@ -12,6 +12,7 @@ public interface NotificationRepository extends JpaRepository<NotificationEntity
             SELECT n FROM NotificationEntity n
             WHERE (n.userId = :curUserId)
                 AND (:read IS NULL OR n.isRead = :read)
+            ORDER BY n.createdAt DESC
             """)
     Page<NotificationEntity> findAllByUserId(Long curUserId, Boolean read, Pageable pageable);
 
