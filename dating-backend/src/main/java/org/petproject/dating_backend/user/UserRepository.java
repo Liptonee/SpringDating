@@ -56,4 +56,11 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
             String city,
             Pageable pageable
     );
+
+    @Query("""
+                select u.firstName from UserEntity u
+                where u.id = :userId
+            """)
+    Optional<String> getFirstNameById(@Param("userId") Long userId);
+
 }

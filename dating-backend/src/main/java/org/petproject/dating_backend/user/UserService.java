@@ -4,10 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.common.exception.BadRequestException;
 import org.petproject.dating_backend.common.exception.ConflictException;
 import org.petproject.dating_backend.common.exception.ForbiddenException;
+import org.petproject.dating_backend.common.exception.NotFoundException;
 import org.petproject.dating_backend.photo.PhotoService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -39,8 +41,13 @@ public class UserService {
     }
 
     @Transactional()
-    @CachePut(value = CACHE_NAME, key = "'profile:' + #curUserId")
-    @CacheEvict(value = CACHE_NAME, key = "'get:' + #curUserId")
+    @Caching(
+            put = @CachePut(value = CACHE_NAME, key = "'profile:' + #curUserId"),
+            evict = {
+                    @CacheEvict(value = CACHE_NAME, key = "'get:' + #curUserId"),
+                    @CacheEvict(value = CACHE_NAME, key = "'firstName:' + #curUserId")
+            }
+    )
     public ProfileUserDto patchCurrentUser(Long curUserId, ProfileUserDto patchProfileUserDto) {
 
         UserEntity userEntity = userRepository.findByIdOrElseThrow(curUserId);
@@ -124,6 +131,14 @@ public class UserService {
         if (user.getPreferredAgeMin() == null) resultSet.add("preferred age min");
 
         return resultSet;
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(value = CACHE_NAME, key = "'firstName:' + #userId")
+    public String getFirstName(Long userId) {
+        return userRepository.getFirstNameById(userId).orElseThrow(
+                () -> new NotFoundException("Пользователь не найден", 404)
+        );
     }
 
 }
