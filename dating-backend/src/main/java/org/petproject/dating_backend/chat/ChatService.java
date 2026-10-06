@@ -1,12 +1,15 @@
 package org.petproject.dating_backend.chat;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.common.exception.ForbiddenException;
 import org.petproject.dating_backend.common.exception.NotFoundException;
 import org.petproject.dating_backend.user.UserService;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -15,6 +18,8 @@ public class ChatService {
     private final ChatMessageRepository messageRepository;
     private final ChatRoomRepository roomRepository;
     private final UserService userService;
+    private final ChatMessageMapper messageMapper;
+    private static final int PAGE_SIZE = 50;
 
     @Transactional
     public ChatMessageResponseDto sendMessage(Long curUserId, ChatMessageRequestDto request) {
@@ -31,19 +36,31 @@ public class ChatService {
         messageEntity.setSenderId(curUserId);
         messageRepository.save(messageEntity);
 
-        return new ChatMessageResponseDto(
-                messageEntity.getId(),
-                messageEntity.getRoomId(),
-                messageEntity.getSenderId(),
-                userService.getFirstName(curUserId),
-                messageEntity.getContent(),
-                messageEntity.getCreatedAt(),
-                messageEntity.isRead()
-        );
+        return messageMapper.toDto(messageEntity, curUserId, userService);
     }
 
     @Transactional
     public void markRead(Long curUserId, Long roomId) {
         messageRepository.markAllReadInRoom(roomId, curUserId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChatMessageResponseDto> getMessages(Long curUserId, Long roomId, Long beforeId) {
+        if (!roomRepository.existsById(roomId)) {
+            throw new NotFoundException("Комната с таким id не существует", 404);
+        }
+        if (!roomRepository.hasMemberById(roomId, curUserId)) {
+            throw new ForbiddenException("Пользователь не является участником комнаты (чата)", 403);
+        }
+
+        Pageable pageable = PageRequest.of(0, PAGE_SIZE);
+        List<ChatMessageEntity> messages =
+                messageRepository.findPage(roomId, beforeId, pageable);
+
+        List<ChatMessageResponseDto> dtos = messages.stream()
+                .map(m -> messageMapper.toDto(m, curUserId, userService))
+                .toList();
+
+        return dtos.reversed();
     }
 }
