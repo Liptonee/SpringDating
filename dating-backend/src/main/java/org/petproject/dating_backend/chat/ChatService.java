@@ -4,11 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.common.exception.ForbiddenException;
 import org.petproject.dating_backend.common.exception.NotFoundException;
 import org.petproject.dating_backend.user.UserService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.swing.text.html.parser.Entity;
 import java.util.List;
 
 @Service
@@ -19,13 +21,16 @@ public class ChatService {
     private final ChatRoomRepository roomRepository;
     private final UserService userService;
     private final ChatMessageMapper messageMapper;
+
+    private final ApplicationEventPublisher eventPublisher;
+
     private static final int PAGE_SIZE = 50;
 
     @Transactional
     public ChatMessageResponseDto sendMessage(Long curUserId, ChatMessageRequestDto request) {
-        if (!roomRepository.existsById(request.roomId())) {
-            throw new NotFoundException("Комната с таким id не существует", 404);
-        }
+        ChatRoomEntity roomEntity = roomRepository.findById(request.roomId()).orElseThrow(
+                () -> new NotFoundException("Комната с таким id не существует", 404)
+        );
         if (!roomRepository.hasMemberById(request.roomId(), curUserId)) {
             throw new ForbiddenException("Пользователь не является участником комнаты (чата)", 403);
         }
@@ -35,6 +40,19 @@ public class ChatService {
         messageEntity.setRoomId(request.roomId());
         messageEntity.setSenderId(curUserId);
         messageRepository.save(messageEntity);
+
+
+        Long receiverId = roomEntity.getFirstUserId().equals(curUserId)
+                ? roomEntity.getSecondUserId()
+                : roomEntity.getFirstUserId();
+
+        eventPublisher.publishEvent(new ChatMessageEvent(
+                messageEntity.getId(),
+                curUserId,
+                receiverId,
+                messageEntity.getContent()
+        ));
+
 
         return messageMapper.toDto(messageEntity, curUserId, userService);
     }
