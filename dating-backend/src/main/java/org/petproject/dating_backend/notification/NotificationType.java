@@ -2,6 +2,6 @@ package org.petproject.dating_backend.notification;
 
 public enum NotificationType {
 
-    LIKE, MATCH
+    LIKE, MATCH, CHAT_MESSAGE
 
 }

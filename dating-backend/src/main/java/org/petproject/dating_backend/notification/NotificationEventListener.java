@@ -1,6 +1,7 @@
 package org.petproject.dating_backend.notification;
 
 import lombok.RequiredArgsConstructor;
+import org.petproject.dating_backend.chat.ChatMessageEvent;
 import org.petproject.dating_backend.match.MatchCreatedEvent;
 import org.petproject.dating_backend.swipe.LikeEvent;
 import org.springframework.stereotype.Component;
@@ -59,7 +60,23 @@ public class NotificationEventListener {
 
     }
 
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onChatMessage(ChatMessageEvent event) {
+        String title = "Title for message";
+        String body = String.format(
+                "Body for message. Sender id: %d, Receiver id %d, content %s",
+                event.senderId(),
+                event.receiverId(),
+                event.content());
 
+        sender.send(event.receiverId(), title, body);
 
+        NotificationRequestDto requestDto = new NotificationRequestDto(
+                event.receiverId(), title, body, NotificationType.CHAT_MESSAGE
+        );
+
+        service.create(requestDto);
+
+    }
 
 }
