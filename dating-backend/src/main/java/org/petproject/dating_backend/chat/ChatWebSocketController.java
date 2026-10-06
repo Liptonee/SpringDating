@@ -2,9 +2,12 @@ package org.petproject.dating_backend.chat;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.petproject.dating_backend.common.exception.ErrorDto;
+import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
@@ -37,6 +40,13 @@ public class ChatWebSocketController {
         return new MarkReadResponseDto(request.roomId(), curUserId, Instant.now());
     }
 
+
+    @MessageExceptionHandler
+    @SendToUser("/queue/errors")
+    public ErrorDto handleException(Exception e) {
+        log.warn("WebSocket error", e);
+        return new ErrorDto(500, "Chat error", e.getMessage());
+    }
 
 
 
