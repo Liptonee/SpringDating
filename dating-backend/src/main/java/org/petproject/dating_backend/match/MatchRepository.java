@@ -44,6 +44,7 @@ public interface MatchRepository extends JpaRepository<MatchEntity, Long> {
     @Query("""
                 SELECT m FROM MatchEntity m
                 WHERE m.firstUserId = :userId OR m.secondUserId = :userId
+                    ORDER BY m.createdAt DESC
             """)
     Page<MatchEntity> findAllBySingleUserId(@Param("userId") Long userId, Pageable pageable);
 

@@ -24,6 +24,8 @@ public class MatchController {
     private final MatchService matchService;
 
     @Operation(summary = "Выдаёт все мэтчи пользователя",
+            description = "Имеется пагинация. Сортировка фиксирована createdAt DESC" +
+                    "Возращает PageResponse<MatchDto>",
             security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "200", description = "Успех",
             content = @Content(schema = @Schema(implementation = MatchDto.class)))
