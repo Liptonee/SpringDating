@@ -6,6 +6,7 @@ import org.petproject.dating_backend.common.exception.NotFoundException;
 import org.petproject.dating_backend.match.MatchCreatedEvent;
 import org.petproject.dating_backend.user.UserService;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class ChatService {
     private final ChatRoomRepository roomRepository;
     private final UserService userService;
     private final ChatMessageMapper messageMapper;
+    private final ChatRoomMapper roomMapper;
 
     private final ApplicationEventPublisher eventPublisher;
 
@@ -92,4 +94,10 @@ public class ChatService {
         roomRepository.save(roomEntity);
     }
 
+    public Page<ChatRoomResponseDto> getRooms(Long curUserId, Pageable pageable) {
+
+        return roomRepository.findAllByUserId(curUserId, pageable)
+                .map(entity -> roomMapper.toResponseDto(entity, curUserId));
+
+    }
 }

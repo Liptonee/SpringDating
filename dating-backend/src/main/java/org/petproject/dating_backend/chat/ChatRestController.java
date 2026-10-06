@@ -1,8 +1,16 @@
 package org.petproject.dating_backend.chat;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.petproject.dating_backend.common.dto.PageResponse;
+import org.petproject.dating_backend.swipe.SwipeHistoryDto;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,4 +36,20 @@ public class ChatRestController {
     ) {
         return chatService.getMessages(curUserId, roomId, beforeId);
     }
+
+
+    @Operation(summary = "Выдаёт все команты-чаты пользователя.",
+            description = "Имеется пагинация. Сортировка фиксирована createdAt DESC" +
+                    "Возращает PageResponse<SwipeHistoryDto>",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponse(responseCode = "200", description = "Успех",
+            content = @Content(schema = @Schema(implementation = ChatRoomResponseDto.class)))
+    @GetMapping()
+    public PageResponse<ChatRoomResponseDto> getLiked(
+            @AuthenticationPrincipal Long curUserId,
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
+        return PageResponse.from(chatService.getRooms(curUserId, pageable));
+    }
+
 }
