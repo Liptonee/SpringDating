@@ -3,13 +3,17 @@ package org.petproject.dating_backend.chat;
 import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.common.exception.ForbiddenException;
 import org.petproject.dating_backend.common.exception.NotFoundException;
+import org.petproject.dating_backend.match.MatchCreatedEvent;
 import org.petproject.dating_backend.user.UserService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
+import javax.sound.sampled.AudioFormat;
 import javax.swing.text.html.parser.Entity;
 import java.util.List;
 
@@ -81,4 +85,11 @@ public class ChatService {
 
         return dtos.reversed();
     }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void createRoom(MatchCreatedEvent event) {
+        ChatRoomEntity roomEntity = roomRepository.createBetween(event.firstUserId(), event.secondUserId());
+        roomRepository.save(roomEntity);
+    }
+
 }

@@ -1,5 +1,6 @@
 package org.petproject.dating_backend.chat;
 
+import org.petproject.dating_backend.match.MatchEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,5 +13,16 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoomEntity, Long> 
                 and r.firstUserId = :userId or r.secondUserId = :userId
             """)
     boolean hasMemberById(@Param("roomId") Long roomId, @Param("userId") Long userId);
+
+
+    /**
+     * НЕ создаёт запись. Просто создаёт верный с точки зрения бд Entity.
+     */
+    default ChatRoomEntity createBetween(Long a, Long b) {
+        ChatRoomEntity r = new ChatRoomEntity();
+        r.setFirstUserId(Math.min(a, b));
+        r.setSecondUserId(Math.max(a, b));
+        return r;
+    }
 
 }
