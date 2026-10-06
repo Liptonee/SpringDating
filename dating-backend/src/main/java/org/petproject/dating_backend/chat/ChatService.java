@@ -1,5 +1,6 @@
 package org.petproject.dating_backend.chat;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.common.exception.ForbiddenException;
 import org.petproject.dating_backend.common.exception.NotFoundException;
@@ -41,4 +42,8 @@ public class ChatService {
         );
     }
 
+    @Transactional
+    public void markRead(Long curUserId, Long roomId) {
+        messageRepository.markAllReadInRoom(roomId, curUserId);
+    }
 }

@@ -8,6 +8,8 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
+import java.time.Instant;
+
 @Controller
 @RequiredArgsConstructor
 @Slf4j
@@ -22,6 +24,17 @@ public class ChatWebSocketController {
             @Payload ChatMessageRequestDto request
     ) {
         return chatService.sendMessage(curUserId, request);
+    }
+
+
+    @MessageMapping("/chat.markRead")
+    @SendTo("/topic/chat/room/{roomId}/read")
+    public MarkReadResponseDto markRead(
+            @Payload MarkReadRequestDto request,
+            @AuthenticationPrincipal Long curUserId
+    ) {
+        chatService.markRead(curUserId, request.roomId());
+        return new MarkReadResponseDto(request.roomId(), curUserId, Instant.now());
     }
 
 
