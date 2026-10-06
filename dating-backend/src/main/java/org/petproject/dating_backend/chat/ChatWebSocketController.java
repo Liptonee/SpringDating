@@ -1,5 +1,6 @@
 package org.petproject.dating_backend.chat;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.petproject.dating_backend.common.exception.ErrorDto;
@@ -24,7 +25,7 @@ public class ChatWebSocketController {
     @SendTo("/topic/chat/room/{roomId}")
     public ChatMessageResponseDto sendMessage(
             @AuthenticationPrincipal Long curUserId,
-            @Payload ChatMessageRequestDto request
+            @Payload @Valid ChatMessageRequestDto request
     ) {
         return chatService.sendMessage(curUserId, request);
     }
@@ -33,7 +34,7 @@ public class ChatWebSocketController {
     @MessageMapping("/chat.markRead")
     @SendTo("/topic/chat/room/{roomId}/read")
     public MarkReadResponseDto markRead(
-            @Payload MarkReadRequestDto request,
+            @Payload @Valid MarkReadRequestDto request,
             @AuthenticationPrincipal Long curUserId
     ) {
         chatService.markRead(curUserId, request.roomId());
