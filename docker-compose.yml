@@ -1,11 +1,25 @@
 services:
+  #  app:
+  #    build: .
+  #    container_name: dating-backend
+  #    ports:
+  #      - "8080:8080"
+  #    env_file:
+  #      - .env
+  #    depends_on:
+  #      postgres:
+  #        condition: service_healthy
+  #      redis:
+  #        condition: service_healthy
+  #      minio:
+  #        condition: service_started
   postgres:
     image: postgres:18-alpine
     container_name: dating-postgres
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: root
+      POSTGRES_PASSWORD:  ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -23,8 +37,8 @@ services:
       - "9000:9000"
       - "9001:9001"
     environment:
-      MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: adminadmin
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
