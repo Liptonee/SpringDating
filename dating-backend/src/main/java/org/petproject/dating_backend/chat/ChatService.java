@@ -14,8 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import javax.sound.sampled.AudioFormat;
-import javax.swing.text.html.parser.Entity;
 import java.time.Instant;
 import java.util.List;
 
@@ -34,17 +32,17 @@ public class ChatService {
     private static final int PAGE_SIZE = 50;
 
     @Transactional
-    public ChatMessageResponseDto sendMessage(Long curUserId, ChatMessageRequestDto request) {
-        ChatRoomEntity roomEntity = roomRepository.findById(request.roomId()).orElseThrow(
+    public ChatMessageResponseDto sendMessage(Long curUserId, Long roomId, ChatMessageRequestDto request) {
+        ChatRoomEntity roomEntity = roomRepository.findById(roomId).orElseThrow(
                 () -> new NotFoundException("Комната с таким id не существует", 404)
         );
-        if (!roomRepository.hasMemberById(request.roomId(), curUserId)) {
+        if (!roomRepository.hasMemberById(roomId, curUserId)) {
             throw new ForbiddenException("Пользователь не является участником комнаты (чата)", 403);
         }
 
         ChatMessageEntity messageEntity = new ChatMessageEntity();
         messageEntity.setContent(request.content());
-        messageEntity.setRoomId(request.roomId());
+        messageEntity.setRoomId(roomId);
         messageEntity.setSenderId(curUserId);
         messageEntity.setCreatedAt(Instant.now());
         messageRepository.save(messageEntity);

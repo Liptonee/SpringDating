@@ -4,10 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.petproject.dating_backend.common.exception.ErrorDto;
-import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -21,26 +18,26 @@ public class ChatWebSocketController {
 
     private final ChatService chatService;
 
-    @MessageMapping("/chat.sendMessage")
+    @MessageMapping("/chat/room/{roomId}/sendMessage")
     @SendTo("/topic/chat/room/{roomId}")
     public ChatMessageResponseDto sendMessage(
             @AuthenticationPrincipal Long curUserId,
+            @DestinationVariable Long roomId,
             @Payload @Valid ChatMessageRequestDto request
     ) {
-        return chatService.sendMessage(curUserId, request);
+        return chatService.sendMessage(curUserId, roomId, request);
     }
 
 
-    @MessageMapping("/chat.markRead")
+    @MessageMapping("/chat/room/{roomId}/markRead")
     @SendTo("/topic/chat/room/{roomId}/read")
     public MarkReadResponseDto markRead(
-            @Payload @Valid MarkReadRequestDto request,
-            @AuthenticationPrincipal Long curUserId
+            @AuthenticationPrincipal Long curUserId,
+            @DestinationVariable Long roomId
     ) {
-        chatService.markRead(curUserId, request.roomId());
-        return new MarkReadResponseDto(request.roomId(), curUserId, Instant.now());
+        chatService.markRead(curUserId, roomId);
+        return new MarkReadResponseDto(roomId, curUserId, Instant.now());
     }
-
 
     @MessageExceptionHandler
     @SendToUser("/queue/errors")
