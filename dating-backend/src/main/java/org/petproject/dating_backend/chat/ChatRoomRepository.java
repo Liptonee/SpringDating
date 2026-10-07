@@ -3,6 +3,7 @@ package org.petproject.dating_backend.chat;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -35,4 +36,14 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoomEntity, Long> 
                 order by r.createdAt desc
             """)
     Page<ChatRoomEntity> findAllByUserId(@Param("userId") Long userId, Pageable pageable);
+
+    @Modifying
+    @Query("""
+                DELETE FROM ChatRoomEntity r
+                WHERE (r.firstUserId = :a AND r.secondUserId = :b)
+                   OR (r.firstUserId = :b AND r.secondUserId = :a)
+            """)
+    int deleteBetween(@Param("a") Long a, @Param("b") Long b);
+
 }
+

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.petproject.dating_backend.common.exception.ForbiddenException;
 import org.petproject.dating_backend.common.exception.NotFoundException;
 import org.petproject.dating_backend.match.MatchCreatedEvent;
+import org.petproject.dating_backend.swipe.UndoSwipeEvent;
 import org.petproject.dating_backend.user.UserService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -124,4 +125,11 @@ public class ChatService {
                 .map(entity -> roomMapper.toResponseDto(entity, curUserId));
 
     }
+
+    @Transactional
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void deleteRoom(UndoSwipeEvent event) {
+        roomRepository.deleteBetween(event.fromUserId(), event.toUserId());
+    }
+
 }
