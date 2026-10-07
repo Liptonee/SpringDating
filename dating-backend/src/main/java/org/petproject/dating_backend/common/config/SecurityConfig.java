@@ -3,6 +3,7 @@ package org.petproject.dating_backend.common.config;
 import org.petproject.dating_backend.common.security.JwtAuthenticationFilter;
 import org.petproject.dating_backend.common.security.RateLimitFilter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -52,6 +53,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/webjars/**"
                         ).permitAll()
+                        .requestMatchers(EndpointRequest.to("health", "info", "metrics", "prometheus")).permitAll()
                         .anyRequest().authenticated()
                 )
 
