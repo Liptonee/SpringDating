@@ -67,6 +67,10 @@ public class ChatService {
 
     @Transactional
     public void markRead(Long curUserId, Long roomId) {
+        if (!roomRepository.hasMemberById(roomId, curUserId)) {
+            throw new ForbiddenException("Пользователь не является участником комнаты (чата)", 403);
+        }
+
         messageRepository.markAllReadInRoom(roomId, curUserId);
     }
 
