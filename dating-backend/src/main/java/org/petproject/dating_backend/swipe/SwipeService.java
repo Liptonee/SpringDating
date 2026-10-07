@@ -94,13 +94,13 @@ public class SwipeService {
 
         swipeRepository.delete(swipeEntity);
 
-        Long secondOneUserId = swipeEntity.getFromId().equals(curUserId)
-                ? swipeEntity.getToId()
-                : swipeEntity.getFromId();
-        eventPublisher.publishEvent(new UndoSwipeEvent(swipeId, curUserId, secondOneUserId));
+        if (swipeEntity.getAction().equals(SwipeAction.LIKE)) {
+            Long secondOneUserId = swipeEntity.getFromId().equals(curUserId)
+                    ? swipeEntity.getToId()
+                    : swipeEntity.getFromId();
+            eventPublisher.publishEvent(new UndoSwipeEvent(swipeId, curUserId, secondOneUserId));
 
-
-
+        }
 
     }
 }
