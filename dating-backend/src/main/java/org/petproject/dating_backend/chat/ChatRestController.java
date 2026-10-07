@@ -27,7 +27,8 @@ public class ChatRestController {
     @Operation(summary = "История сообщений комнаты",
             description = "Cursor-based. Передайте beforeId=null для первой загрузки, " +
                     "затем beforeId = 'id самого старого загруженного сообщения' для подгрузки вверх." +
-                    "Pageable с фиксированным размером в 50")
+                    "Pageable с фиксированным размером в 50",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/{roomId}/messages")
     public List<ChatMessageResponseDto> getMessages(
             @AuthenticationPrincipal Long curUserId,
