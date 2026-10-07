@@ -4,11 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.swipe.SwipeAction;
 import org.petproject.dating_backend.swipe.SwipeRepository;
 import org.springframework.context.ApplicationEventPublisher;
+import org.petproject.dating_backend.swipe.UndoSwipeEvent;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Service
 @RequiredArgsConstructor
@@ -63,8 +66,9 @@ public class MatchService {
     }
 
     @Transactional
-    public void undoMatch(Long fromId, Long toId) {
-        matchRepository.deleteBetween(fromId, toId);
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void undoMatch(UndoSwipeEvent event) {
+        matchRepository.deleteBetween(event.fromUserId(), event.toUserId());
     }
 
 }
