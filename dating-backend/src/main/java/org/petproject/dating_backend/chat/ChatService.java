@@ -17,6 +17,9 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -62,7 +65,8 @@ public class ChatService {
         ));
 
 
-        return messageMapper.toDto(messageEntity, userService);
+        Map<Long, String> senderNames = userService.getFirstNamesByIds(List.of(curUserId));
+        return messageMapper.toDto(messageEntity, senderNames);
     }
 
     @Transactional
@@ -87,8 +91,14 @@ public class ChatService {
         List<ChatMessageEntity> messages =
                 messageRepository.findPage(roomId, beforeId, pageable);
 
+        Set<Long> senderIds = messages.stream()
+                .map(ChatMessageEntity::getSenderId)
+                .collect(Collectors.toSet());
+
+        Map<Long, String> senderNames = userService.getFirstNamesByIds(senderIds);
+
         List<ChatMessageResponseDto> dtos = messages.stream()
-                .map(m -> messageMapper.toDto(m, userService))
+                .map(m -> messageMapper.toDto(m, senderNames))
                 .toList();
 
         return dtos.reversed();

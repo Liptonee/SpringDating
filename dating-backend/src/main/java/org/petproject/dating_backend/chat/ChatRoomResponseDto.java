@@ -14,7 +14,7 @@ public record ChatRoomResponseDto(
         Long secondOneUserId,
 
         @Schema(description = "Дата и время создания чат-комнаты", example = "2025-01-15T10:30:00Z")
-        Instant created_at
+        Instant createdAt
 
 ) {
 }

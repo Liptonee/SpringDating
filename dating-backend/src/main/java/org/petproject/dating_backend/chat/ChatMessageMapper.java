@@ -5,6 +5,8 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.petproject.dating_backend.user.UserService;
 
+import java.util.Map;
+
 @Mapper(componentModel = "spring")
 public interface ChatMessageMapper {
 
@@ -12,10 +14,10 @@ public interface ChatMessageMapper {
             @Mapping(target = "id",         source = "messageEntity.id"),
             @Mapping(target = "roomId",     source = "messageEntity.roomId"),
             @Mapping(target = "senderId",   source = "messageEntity.senderId"),
-            @Mapping(target = "senderName", expression = "java(userService.getFirstName(messageEntity.getSenderId()))"),
+            @Mapping(target = "senderName", expression = "java(senderNames.get(messageEntity.getSenderId()))"),
             @Mapping(target = "content",    source = "messageEntity.content"),
             @Mapping(target = "createdAt",  source = "messageEntity.createdAt"),
-            @Mapping(target = "isRead",       source = "messageEntity.read")
+            @Mapping(target = "isRead",     source = "messageEntity.isRead")
     })
-    ChatMessageResponseDto toDto(ChatMessageEntity messageEntity, UserService userService);
+    ChatMessageResponseDto toDto(ChatMessageEntity messageEntity, Map<Long, String> senderNames);
 }

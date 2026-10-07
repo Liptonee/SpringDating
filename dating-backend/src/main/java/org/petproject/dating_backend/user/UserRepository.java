@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,10 +58,14 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
             Pageable pageable
     );
 
-    @Query("""
-                select u.firstName from UserEntity u
-                where u.id = :userId
-            """)
-    Optional<String> getFirstNameById(@Param("userId") Long userId);
+
+    @Query("select u.id as id, u.firstName as firstName from UserEntity u where u.id in :ids")
+    List<UserNameProjection> findFirstNamesByIds(@Param("ids") Collection<Long> ids);
+
+    interface UserNameProjection {
+        Long getId();
+
+        String getFirstName();
+    }
 
 }
