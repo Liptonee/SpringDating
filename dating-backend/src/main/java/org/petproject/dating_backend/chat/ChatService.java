@@ -1,6 +1,7 @@
 package org.petproject.dating_backend.chat;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.petproject.dating_backend.common.exception.ForbiddenException;
 import org.petproject.dating_backend.common.exception.NotFoundException;
 import org.petproject.dating_backend.match.MatchCreatedEvent;
@@ -17,6 +18,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import java.time.Instant;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatService {
@@ -95,7 +97,15 @@ public class ChatService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void createRoom(MatchCreatedEvent event) {
         ChatRoomEntity roomEntity = roomRepository.createBetween(event.firstUserId(), event.secondUserId());
-        roomRepository.save(roomEntity);
+        try{
+            roomRepository.save(roomEntity);
+        } catch (Exception e) {
+            log.error("Лайк+мэтч успешно созданы (коммит), но команту-чат создать не удалось." +
+                            "matchId - {}, firstUserId - {}, secondUserId - {}",
+                    event.matchId(),
+                    event.firstUserId(),
+                    event.secondUserId());
+        }
     }
 
     public Page<ChatRoomResponseDto> getRooms(Long curUserId, Pageable pageable) {
