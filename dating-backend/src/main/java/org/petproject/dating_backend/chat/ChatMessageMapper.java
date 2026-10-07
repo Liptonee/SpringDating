@@ -12,10 +12,10 @@ public interface ChatMessageMapper {
             @Mapping(target = "id",         source = "messageEntity.id"),
             @Mapping(target = "roomId",     source = "messageEntity.roomId"),
             @Mapping(target = "senderId",   source = "messageEntity.senderId"),
-            @Mapping(target = "senderName",  expression = "java(userService.getFirstName(curUserId))"),
+            @Mapping(target = "senderName", expression = "java(userService.getFirstName(messageEntity.getSenderId()))"),
             @Mapping(target = "content",    source = "messageEntity.content"),
             @Mapping(target = "createdAt",  source = "messageEntity.createdAt"),
             @Mapping(target = "isRead",       source = "messageEntity.read")
     })
-    ChatMessageResponseDto toDto(ChatMessageEntity messageEntity, Long curUserId, UserService userService);
+    ChatMessageResponseDto toDto(ChatMessageEntity messageEntity, UserService userService);
 }

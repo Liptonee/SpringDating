@@ -62,7 +62,7 @@ public class ChatService {
         ));
 
 
-        return messageMapper.toDto(messageEntity, curUserId, userService);
+        return messageMapper.toDto(messageEntity, userService);
     }
 
     @Transactional
@@ -84,7 +84,7 @@ public class ChatService {
                 messageRepository.findPage(roomId, beforeId, pageable);
 
         List<ChatMessageResponseDto> dtos = messages.stream()
-                .map(m -> messageMapper.toDto(m, curUserId, userService))
+                .map(m -> messageMapper.toDto(m, userService))
                 .toList();
 
         return dtos.reversed();
