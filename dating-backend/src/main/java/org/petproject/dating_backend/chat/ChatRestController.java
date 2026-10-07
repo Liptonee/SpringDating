@@ -40,12 +40,12 @@ public class ChatRestController {
 
     @Operation(summary = "Выдаёт все команты-чаты пользователя.",
             description = "Имеется пагинация. Сортировка фиксирована createdAt DESC" +
-                    "Возращает PageResponse<SwipeHistoryDto>",
+                    "Возращает PageResponse<ChatRoomResponseDto>",
             security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "200", description = "Успех",
             content = @Content(schema = @Schema(implementation = ChatRoomResponseDto.class)))
     @GetMapping()
-    public PageResponse<ChatRoomResponseDto> getLiked(
+    public PageResponse<ChatRoomResponseDto> getRooms(
             @AuthenticationPrincipal Long curUserId,
             @PageableDefault(size = 20) Pageable pageable
     ) {
