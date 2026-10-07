@@ -5,6 +5,7 @@ import org.petproject.dating_backend.swipe.SwipeAction;
 import org.petproject.dating_backend.swipe.SwipeRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import org.petproject.dating_backend.swipe.UndoSwipeEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -66,7 +67,7 @@ public class MatchService {
     }
 
     @Transactional
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void undoMatch(UndoSwipeEvent event) {
         matchRepository.deleteBetween(event.fromUserId(), event.toUserId());
     }

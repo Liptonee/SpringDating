@@ -8,6 +8,7 @@ import org.petproject.dating_backend.match.MatchCreatedEvent;
 import org.petproject.dating_backend.swipe.UndoSwipeEvent;
 import org.petproject.dating_backend.user.UserService;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -127,7 +128,7 @@ public class ChatService {
     }
 
     @Transactional
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void deleteRoom(UndoSwipeEvent event) {
         roomRepository.deleteBetween(event.fromUserId(), event.toUserId());
     }
