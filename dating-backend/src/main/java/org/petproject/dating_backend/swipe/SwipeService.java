@@ -7,6 +7,7 @@ import org.petproject.dating_backend.common.exception.ForbiddenException;
 import org.petproject.dating_backend.common.exception.NotFoundException;
 import org.petproject.dating_backend.match.MatchService;
 import org.petproject.dating_backend.user.UserRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +25,8 @@ public class SwipeService {
     private final UserRepository userRepository;
     private final MatchService matchService;
     private final SwipeMapper swipeMapper;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public SwipeResponseDto swipe(Long curUserId, SwipeRequestDto swipeRequestDto) {
@@ -81,7 +84,14 @@ public class SwipeService {
         }
 
         swipeRepository.delete(swipeEntity);
-        matchService.undoMatch(swipeEntity.getFromId(), swipeEntity.getToId());
+
+        Long secondOneUserId = swipeEntity.getFromId().equals(curUserId)
+                ? swipeEntity.getToId()
+                : swipeEntity.getFromId();
+        eventPublisher.publishEvent(new UndoSwipeEvent(swipeId, curUserId, secondOneUserId));
+
+
+
 
     }
 }
