@@ -28,4 +28,5 @@ public record ChatMessageResponseDto(
 
         @Schema(description = "Флаг, указывающий, прочитано ли сообщение", example = "false")
         boolean isRead
-) {}
+) {
+}

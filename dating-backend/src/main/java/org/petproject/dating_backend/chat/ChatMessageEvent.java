@@ -1,6 +1,6 @@
 package org.petproject.dating_backend.chat;
 
-public record ChatMessageEvent (
+public record ChatMessageEvent(
 
         Long messageId,
 

@@ -107,7 +107,7 @@ public class ChatService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void createRoom(MatchCreatedEvent event) {
         ChatRoomEntity roomEntity = roomRepository.createBetween(event.firstUserId(), event.secondUserId());
-        try{
+        try {
             roomRepository.save(roomEntity);
         } catch (Exception e) {
             log.error("Лайк+мэтч успешно созданы (коммит), но команту-чат создать не удалось." +

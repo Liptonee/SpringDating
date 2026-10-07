@@ -1,6 +1,5 @@
 package org.petproject.dating_backend.chat;
 
-import org.petproject.dating_backend.match.MatchEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,9 +30,9 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoomEntity, Long> 
     }
 
     @Query("""
-            select r from ChatRoomEntity r
-            where r.secondUserId = :userId or r.firstUserId = :userId
-            order by r.createdAt desc
-        """)
+                select r from ChatRoomEntity r
+                where r.secondUserId = :userId or r.firstUserId = :userId
+                order by r.createdAt desc
+            """)
     Page<ChatRoomEntity> findAllByUserId(@Param("userId") Long userId, Pageable pageable);
 }
