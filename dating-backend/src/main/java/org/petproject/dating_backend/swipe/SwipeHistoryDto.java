@@ -19,7 +19,7 @@ public record SwipeHistoryDto(
         SwipeAction action,
 
         @Schema(description = "Когда был совершён свайп", example = "2026-09-25T10:15:30Z")
-        Instant created_at
+        Instant createdAt
 
 ) {
 }

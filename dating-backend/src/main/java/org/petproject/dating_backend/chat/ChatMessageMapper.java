@@ -16,7 +16,7 @@ public interface ChatMessageMapper {
             @Mapping(target = "senderName", expression = "java(senderNames.get(messageEntity.getSenderId()))"),
             @Mapping(target = "content", source = "messageEntity.content"),
             @Mapping(target = "createdAt", source = "messageEntity.createdAt"),
-            @Mapping(target = "isRead", source = "messageEntity.isRead")
+            @Mapping(target = "isRead", expression = "java(messageEntity.isRead())")
     })
     ChatMessageResponseDto toDto(ChatMessageEntity messageEntity, Map<Long, String> senderNames);
 }
