@@ -7,12 +7,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
+
 public interface ChatRoomRepository extends JpaRepository<ChatRoomEntity, Long> {
 
     @Query("""
             select count(r) > 0 from ChatRoomEntity r
             where r.id = :roomId
-                and r.firstUserId = :userId or r.secondUserId = :userId
+                and (r.firstUserId = :userId or r.secondUserId = :userId)
             """)
     boolean hasMemberById(@Param("roomId") Long roomId, @Param("userId") Long userId);
 
@@ -24,6 +26,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoomEntity, Long> 
         ChatRoomEntity r = new ChatRoomEntity();
         r.setFirstUserId(Math.min(a, b));
         r.setSecondUserId(Math.max(a, b));
+        r.setCreatedAt(Instant.now());
         return r;
     }
 

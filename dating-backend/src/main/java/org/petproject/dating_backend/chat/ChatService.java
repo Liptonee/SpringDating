@@ -16,6 +16,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import javax.sound.sampled.AudioFormat;
 import javax.swing.text.html.parser.Entity;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -45,6 +46,7 @@ public class ChatService {
         messageEntity.setContent(request.content());
         messageEntity.setRoomId(request.roomId());
         messageEntity.setSenderId(curUserId);
+        messageEntity.setCreatedAt(Instant.now());
         messageRepository.save(messageEntity);
 
 
