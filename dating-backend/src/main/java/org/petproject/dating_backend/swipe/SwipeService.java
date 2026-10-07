@@ -1,5 +1,6 @@
 package org.petproject.dating_backend.swipe;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.petproject.dating_backend.common.exception.BadRequestException;
@@ -25,6 +26,8 @@ public class SwipeService {
     private final UserRepository userRepository;
     private final MatchService matchService;
     private final SwipeMapper swipeMapper;
+
+    private final MeterRegistry registry;
 
     private final ApplicationEventPublisher eventPublisher;
 
@@ -66,6 +69,8 @@ public class SwipeService {
 
         boolean isMatched = matchService.doMatch(curUserId, swipeRequestDto.toId(), swipeRequestDto.action());
 
+        registry.counter("swipes.total",
+                "action", swipeRequestDto.action().name().toLowerCase()).increment();
         return new SwipeResponseDto(isMatched);
 
     }
@@ -93,6 +98,7 @@ public class SwipeService {
         }
 
         swipeRepository.delete(swipeEntity);
+        registry.counter("swipes.undone.total").increment();
 
         if (swipeEntity.getAction().equals(SwipeAction.LIKE)) {
             Long secondOneUserId = swipeEntity.getFromId().equals(curUserId)

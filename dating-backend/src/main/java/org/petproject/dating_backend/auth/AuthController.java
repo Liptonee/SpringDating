@@ -1,5 +1,6 @@
 package org.petproject.dating_backend.auth;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -40,6 +41,8 @@ public class AuthController {
     private final UserMapper userMapper;
     private final RefreshTokenService refreshTokenService;
 
+    private final MeterRegistry registry;
+
     @Value("${jwt.refresh.cookie.secured}")
     private boolean isSecuredCookie;
 
@@ -71,6 +74,7 @@ public class AuthController {
         refreshTokenService.save(refresh, userDetails.getUser().getEmail());
         ResponseCookie cookie = createRefreshCookie(refresh);
 
+        registry.counter("user.logins.total", "result", "success").increment();
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(new AuthResponseDto(access));
@@ -102,6 +106,8 @@ public class AuthController {
         user.setRole(UserRole.USER);
         user.setReadyForDeck(false);
         userRepository.save(user);
+
+        registry.counter("user.registrations.total").increment();
         return ResponseEntity.status(201).body(userMapper.toProfileDto(user));
     }
 
@@ -136,6 +142,7 @@ public class AuthController {
 
         ResponseCookie cookie = createRefreshCookie(newRefresh);
 
+        registry.counter("token.refreshes.total").increment();
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(new AuthResponseDto(newAccess));
@@ -161,6 +168,7 @@ public class AuthController {
 
         ResponseCookie clearCookie = createClearCookie();
 
+        registry.counter("user.logouts.total").increment();
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, clearCookie.toString())
                 .build();

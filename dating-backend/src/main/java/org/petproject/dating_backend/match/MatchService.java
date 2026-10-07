@@ -1,18 +1,17 @@
 package org.petproject.dating_backend.match;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.swipe.SwipeAction;
 import org.petproject.dating_backend.swipe.SwipeRepository;
-import org.springframework.context.ApplicationEventPublisher;
 import org.petproject.dating_backend.swipe.UndoSwipeEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +22,8 @@ public class MatchService {
     private final MatchMapper matchMapper;
 
     private final ApplicationEventPublisher eventPublisher;
+
+    private final MeterRegistry registry;
 
     @Transactional
     public boolean doMatch(Long fromUserId, Long toUserId, SwipeAction swipeAction) {
@@ -39,6 +40,7 @@ public class MatchService {
             }
 
             isMatched = true;
+            registry.counter("matches.created.total").increment();
 
             eventPublisher.publishEvent(new MatchCreatedEvent(
                     matchEntity.getId(),
@@ -70,6 +72,7 @@ public class MatchService {
     @EventListener
     public void undoMatch(UndoSwipeEvent event) {
         matchRepository.deleteBetween(event.fromUserId(), event.toUserId());
+        registry.counter("matches.undone.total").increment();
     }
 
 }

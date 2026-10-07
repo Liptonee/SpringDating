@@ -1,5 +1,6 @@
 package org.petproject.dating_backend.notification;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.common.exception.ForbiddenException;
 import org.petproject.dating_backend.common.exception.NotFoundException;
@@ -16,6 +17,8 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
 
+    private final MeterRegistry registry;
+
     @Transactional
     public void create(NotificationRequestDto requestDto){
         NotificationEntity entity = new NotificationEntity();
@@ -25,6 +28,8 @@ public class NotificationService {
         entity.setType(requestDto.type());
 
         notificationRepository.save(entity);
+        registry.counter("notifications.created.total",
+                "type", requestDto.type().name()).increment();
     }
 
 
@@ -39,6 +44,7 @@ public class NotificationService {
 
         entity.setIsRead(true);
         notificationRepository.save(entity);
+        registry.counter("notifications.read.total").increment();
     }
 
     @Transactional(readOnly = true)
@@ -51,6 +57,7 @@ public class NotificationService {
             throw new ForbiddenException("Вы не можете просмотреть чужое уведомление", 403);
         }
 
+        registry.counter("notifications.read_all.total").increment();
         return notificationMapper.toResponse(entity);
     }
 

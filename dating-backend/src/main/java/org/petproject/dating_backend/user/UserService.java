@@ -1,5 +1,6 @@
 package org.petproject.dating_backend.user;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.common.exception.BadRequestException;
 import org.petproject.dating_backend.common.exception.ConflictException;
@@ -26,6 +27,8 @@ public class UserService {
     private final UserMapper userMapper;
     private final PhotoService photoService;
     public static final String CACHE_NAME = "users";
+
+    private final MeterRegistry registry;
 
     @Transactional(readOnly = true)
     @Cacheable(value = CACHE_NAME, key = "'profile:' + #curUserId")
@@ -93,6 +96,7 @@ public class UserService {
             userEntity.setReadyForDeck(true);
         }
 
+        registry.counter("users.profile_updated.total").increment();
         return userMapper.toProfileDto(userRepository.save(userEntity));
     }
 

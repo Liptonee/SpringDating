@@ -1,5 +1,6 @@
 package org.petproject.dating_backend.deck;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.petproject.dating_backend.photo.PhotoService;
@@ -18,6 +19,8 @@ public class DeckService {
 
     private final PhotoService photoService;
     private final UserService userService;
+
+    private final MeterRegistry registry;
 
     @Transactional(readOnly = true)
     public List<CardDto> getDeck(Long curUserId, Short quantity) {
@@ -38,6 +41,11 @@ public class DeckService {
                     user.shortAbout(),
                     user.age()
             ));
+        }
+
+        registry.counter("deck.requests.total").increment();
+        if (cards.isEmpty()) {
+            registry.counter("deck.empty.total").increment();
         }
 
         return cards;

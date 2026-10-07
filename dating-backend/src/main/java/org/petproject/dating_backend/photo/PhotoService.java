@@ -1,5 +1,6 @@
 package org.petproject.dating_backend.photo;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import io.minio.*;
 import io.minio.errors.MinioException;
 import lombok.extern.slf4j.Slf4j;
@@ -41,17 +42,20 @@ public class PhotoService {
     private final MinioClient minio;
     private final PhotoMapper photoMapper;
 
+    private final MeterRegistry registry;
 
     public PhotoService(@Value("${minio.bucket-name}") String bucketName,
                         PhotoRepository photoRepository,
                         UserRepository userRepository,
                         MinioClient minio,
-                        PhotoMapper photoMapper) {
+                        PhotoMapper photoMapper,
+                        MeterRegistry registry) {
         this.BUCKET_NAME = bucketName;
         this.photoRepository = photoRepository;
         this.userRepository = userRepository;
         this.minio = minio;
         this.photoMapper = photoMapper;
+        this.registry = registry;
     }
 
 
@@ -104,7 +108,9 @@ public class PhotoService {
         }
 
         try {
-            return photoRepository.save(photoEntity).getId();
+            Long id = photoRepository.save(photoEntity).getId();
+            registry.counter("photos.uploaded.total").increment();
+            return id;
         } catch (Exception e) {
             try {
                 minio.removeObject(RemoveObjectArgs.builder()
@@ -244,6 +250,8 @@ public class PhotoService {
             log.error("The photo could not be deleted from MiniO, but the photo was deleted from the database.");
             throw e;
         }
+
+        registry.counter("photos.deleted.total").increment();
     }
 
     @Transactional(readOnly = true)

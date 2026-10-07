@@ -1,5 +1,6 @@
 package org.petproject.dating_backend.chat;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.petproject.dating_backend.common.exception.ForbiddenException;
@@ -36,6 +37,8 @@ public class ChatService {
 
     private final ApplicationEventPublisher eventPublisher;
 
+    private final MeterRegistry registry;
+
     private static final int PAGE_SIZE = 50;
 
     @Transactional
@@ -68,6 +71,8 @@ public class ChatService {
 
 
         Map<Long, String> senderNames = userService.getFirstNamesByIds(List.of(curUserId));
+
+        registry.counter("messages.sent.total").increment();
         return messageMapper.toDto(messageEntity, senderNames);
     }
 
@@ -111,6 +116,7 @@ public class ChatService {
         ChatRoomEntity roomEntity = roomRepository.createBetween(event.firstUserId(), event.secondUserId());
         try {
             roomRepository.save(roomEntity);
+            registry.counter("chat.rooms.created.total").increment();
         } catch (Exception e) {
             log.error("Лайк+мэтч успешно созданы (коммит), но команту-чат создать не удалось." +
                             "matchId - {}, firstUserId - {}, secondUserId - {}",
@@ -131,6 +137,7 @@ public class ChatService {
     @EventListener
     public void deleteRoom(UndoSwipeEvent event) {
         roomRepository.deleteBetween(event.fromUserId(), event.toUserId());
+        registry.counter("chat.rooms.deleted.total").increment();
     }
 
 }
