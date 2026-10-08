@@ -2,6 +2,7 @@ package org.petproject.dating_backend.match;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
+import org.petproject.dating_backend.common.exception.BadRequestException;
 import org.petproject.dating_backend.swipe.SwipeAction;
 import org.petproject.dating_backend.swipe.SwipeRepository;
 import org.petproject.dating_backend.swipe.UndoLikeEvent;
@@ -25,8 +26,12 @@ public class MatchService {
 
     private final MeterRegistry registry;
 
-    @Transactional
+    @Transactional(noRollbackFor = DataIntegrityViolationException.class)
     public boolean doMatch(Long fromUserId, Long toUserId, SwipeAction swipeAction) {
+        if (fromUserId.equals(toUserId)) {
+            throw new BadRequestException("Нельзя сделать мэтч с самим собой", 400);
+        }
+
         boolean isMatched = false;
 
         if (swipeAction.equals(SwipeAction.LIKE)
@@ -61,7 +66,8 @@ public class MatchService {
     }
 
 
-    @Transactional
+    @Transactional(readOnly = true)
+    //Недоработка - лучше бы возвращалось обогащённое dto 
     public Page<MatchDto> getMatches(Long curUserId, Pageable pageable) {
 
         return matchRepository.findAllBySingleUserId(curUserId, pageable).map(matchMapper::toDto);
@@ -71,9 +77,11 @@ public class MatchService {
     @Transactional
     @EventListener
     public void undoMatch(UndoLikeEvent event) {
-        matchRepository.deleteBetween(event.fromUserId(), event.toUserId());
+        int deleted = matchRepository.deleteBetween(event.fromUserId(), event.toUserId());
         registry.counter("matches.undone.total").increment();
-        eventPublisher.publishEvent(new UndoMatchEvent(event.toUserId(), event.fromUserId()));
+        if (deleted > 0) {
+            eventPublisher.publishEvent(new UndoMatchEvent(event.toUserId(), event.fromUserId()));
+        }
 
     }
 

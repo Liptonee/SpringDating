@@ -10,6 +10,6 @@ public record MatchCreatedEvent(
 
         Long secondUserId,
 
-        Instant created_at
+        Instant createdAt
 ) {
 }
