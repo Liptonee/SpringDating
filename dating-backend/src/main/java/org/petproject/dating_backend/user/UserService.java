@@ -45,14 +45,13 @@ public class UserService {
     @Transactional()
     @Caching(
             put = @CachePut(value = CACHE_NAME, key = "'profile:' + #curUserId"),
-            evict = {
-                    @CacheEvict(value = CACHE_NAME, key = "'get:' + #curUserId"),
-                    @CacheEvict(value = CACHE_NAME, key = "'firstName:' + #curUserId")
-            }
+            evict = @CacheEvict(value = CACHE_NAME, key = "'get:' + #curUserId")
     )
     public ProfileUserDto patchCurrentUser(Long curUserId, ProfileUserDto patchProfileUserDto) {
 
-        UserEntity userEntity = userRepository.findByIdOrElseThrow(curUserId);
+        UserEntity userEntity = userRepository.findByIdForUpdate(curUserId).orElseThrow(
+                () -> new NotFoundException("Пользователь не найден", 404)
+        );
 
         if (patchProfileUserDto.firstName() != null && !patchProfileUserDto.firstName().isBlank()) {
             userEntity.setFirstName(patchProfileUserDto.firstName());
@@ -61,10 +60,11 @@ public class UserService {
             userEntity.setAge(patchProfileUserDto.age());
         }
         if (patchProfileUserDto.email() != null && !patchProfileUserDto.email().isBlank()) {
-            if (userRepository.existsByEmailAndIdNot(patchProfileUserDto.email(), curUserId)) {
+            String normalizeEmail = patchProfileUserDto.email().toLowerCase().trim();
+            if (userRepository.existsByEmailAndIdNot(normalizeEmail, curUserId)) {
                 throw new ConflictException("Такой email уже существует", 409);
             }
-            userEntity.setEmail(patchProfileUserDto.email());
+            userEntity.setEmail(normalizeEmail);
         }
         if (patchProfileUserDto.city() != null && !patchProfileUserDto.city().isBlank()) {
             userEntity.setCity(patchProfileUserDto.city());
@@ -85,7 +85,7 @@ public class UserService {
         Short newMax = patchProfileUserDto.preferredAgeMax() != null
                 ? patchProfileUserDto.preferredAgeMax()
                 : userEntity.getPreferredAgeMax();
-        if (newMin != null && newMax != null && newMin <= newMax) {
+        if (newMin != null && newMax != null && newMin > newMax) {
             throw new BadRequestException("Минимум диапазона должен быть <= максимума", 400);
         }
         userEntity.setPreferredAgeMin(newMin);
@@ -103,10 +103,10 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<GetUserDto> getByPreferences(Long curUserId, Short quantity) {
-        if (!getNotReadyFields(curUserId).isEmpty()) {
+        UserEntity user = userRepository.findByIdOrElseThrow(curUserId);
+        if (!getNotReadyFields(user.getId()).isEmpty()) {
             throw new ForbiddenException("Профиль пользователя не готов к получению колоды", 403);
         }
-        UserEntity user = userRepository.findByIdOrElseThrow(curUserId);
 
         UserGender gender = user.getGender().equals(UserGender.MALE)
                 ? UserGender.FEMALE : UserGender.MALE;
@@ -137,6 +137,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    //Либо выдавать по одному (N+1 запрос) но кэшировать
     public Map<Long, String> getFirstNamesByIds(Collection<Long> ids) {
         if (ids == null || ids.isEmpty()) return Map.of();
         return userRepository.findFirstNamesByIds(ids).stream()

@@ -1,0 +1,1 @@
+ALTER TABLE users ADD CONSTRAINT check_users_age CHECK ( users.age >= 18 AND users.age <= 100 )

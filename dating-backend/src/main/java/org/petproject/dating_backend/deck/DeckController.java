@@ -26,7 +26,7 @@ public class DeckController {
 
     private final DeckService deckService;
 
-    @Operation(summary = "Возвращает список карточек пользователей",
+    @Operation(summary = "Возвращает список карточек пользователей, максимум 100 карточек",
             security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "200", description = "Успех",
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = CardDto.class))))
@@ -36,6 +36,7 @@ public class DeckController {
             @RequestParam(value = "quantity", required = false) Short quantity
     ) {
         quantity = quantity == null ? 5 : quantity;
+        quantity = quantity > 100 ? 100 : quantity;
         return ResponseEntity.ok(deckService.getDeck(curUserId, quantity));
     }
 

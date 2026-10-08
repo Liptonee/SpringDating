@@ -10,6 +10,7 @@ import jakarta.validation.constraints.*;
         Также используется как ответ GET метода (GET /users/me) для получения профиля текущего пользователя,
         в данном случае id присутствует.
         """)
+//Недоработка - лучше бы разделить на patch и profile
 public record ProfileUserDto(
 
         @Schema(description = "ID пользователя. При запросе обязательно null, при ответе присутствует",
@@ -76,6 +77,7 @@ public record ProfileUserDto(
 
         @Schema(description = "Готов ли пользователь к получению колоды/выдаче в колоде",
                 example = "true")
+        @Null
         Boolean readyForDeck
 
 

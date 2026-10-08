@@ -42,6 +42,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     @Query("""
                 select u from UserEntity u
                 where u.id <> :curUserId
+                  and u.readyForDeck = true
                   and u.age between :ageMin and :ageMax
                   and u.gender = :gender
                   and u.city = :city
