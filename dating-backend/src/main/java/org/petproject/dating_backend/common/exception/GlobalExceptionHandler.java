@@ -1,7 +1,5 @@
 package org.petproject.dating_backend.common.exception;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.MinioException;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -96,8 +94,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErrorDto> handleMethodNotSupported(HttpRequestMethodNotSupportedException e) {
         log.warn("Controller doesn't supported this method", e);
-        return ResponseEntity.status(400)
-                .body(new ErrorDto(400,
+        return ResponseEntity.status(405)
+                .body(new ErrorDto(405,
                         "Controller doesn't supported this method",
                         e.getMessage() + "for this controller. Supported: " + e.getSupportedHttpMethods()));
     }
@@ -148,18 +146,10 @@ public class GlobalExceptionHandler {
                         e.getMessage()));
     }
 
-    @ExceptionHandler({ExpiredJwtException.class, MalformedJwtException.class})
-    public ResponseEntity<ErrorDto> handleJwt(Exception e) {
-        log.warn("JWT Token is invalid or expired", e);
-        return ResponseEntity.status(401)
-                .body(new ErrorDto(401,
-                        "JWT Token is invalid or expired",
-                        e.getMessage()));
-    }
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorDto> handleAllBusiness(BusinessException e) {
-        log.error("Some undefined business exception.", e);
+        log.warn("Some undefined business exception.", e);
         return ResponseEntity.status(e.getStatusCode()).body(
                 new ErrorDto(e.getStatusCode(),
                         "Some undefined business exception.",

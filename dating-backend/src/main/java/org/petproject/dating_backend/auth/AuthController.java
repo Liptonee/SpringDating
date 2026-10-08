@@ -13,7 +13,7 @@ import org.petproject.dating_backend.common.exception.ConflictException;
 import org.petproject.dating_backend.common.exception.ErrorDto;
 import org.petproject.dating_backend.common.exception.UnauthorizedException;
 import org.petproject.dating_backend.common.security.CustomUserDetails;
-import org.petproject.dating_backend.common.security.JwtGenerator;
+import org.petproject.dating_backend.common.security.JwtService;
 import org.petproject.dating_backend.common.security.RefreshTokenService;
 import org.petproject.dating_backend.user.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,11 +35,11 @@ import java.time.Duration;
 public class AuthController {
 
     private final AuthenticationManager authManager;
-    private final JwtGenerator jwtGenerator;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
     private final RefreshTokenService refreshTokenService;
+    private final JwtService jwtService;
 
     private final MeterRegistry registry;
 
@@ -68,7 +68,7 @@ public class AuthController {
         );
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        String access = jwtGenerator.generateToken(userDetails.getUser());
+        String access = jwtService.generateToken(userDetails.getUser());
 
         String refresh = refreshTokenService.generateToken();
         refreshTokenService.save(refresh, userDetails.getUser().getEmail());
@@ -134,7 +134,7 @@ public class AuthController {
         if (username == null) throw new UnauthorizedException("Refresh token не существует", 401);
 
         UserEntity user = userRepository.findByEmailOrThrow(username);
-        String newAccess = jwtGenerator.generateToken(user);
+        String newAccess = jwtService.generateToken(user);
         String newRefresh = refreshTokenService.generateToken();
 
         refreshTokenService.delete(oldRefresh);

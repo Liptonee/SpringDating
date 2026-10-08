@@ -1,5 +1,6 @@
 package org.petproject.dating_backend.common.security;
 
+import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.petproject.dating_backend.user.UserEntity;
 import org.petproject.dating_backend.user.UserRepository;
@@ -13,14 +14,12 @@ import org.springframework.util.Assert;
 import java.util.ArrayList;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Component
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
-    public CustomUserDetailsService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     @Override
     public CustomUserDetails loadUserByUsername(@NonNull String username)

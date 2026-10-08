@@ -9,14 +9,12 @@ import io.lettuce.core.codec.RedisCodec;
 import io.lettuce.core.codec.StringCodec;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 
 @Configuration
 public class RateLimitConfig {
 
     @Bean
-    public ProxyManager<String> proxyManager(LettuceConnectionFactory connectionFactory) {
-        RedisClient redisClient = (RedisClient) connectionFactory.getNativeClient();
+    public ProxyManager<String> proxyManager(RedisClient redisClient) {
         StatefulRedisConnection<String, byte[]> connection = redisClient.connect(
                 RedisCodec.of(StringCodec.UTF8, ByteArrayCodec.INSTANCE)
         );

@@ -24,10 +24,7 @@ public class LoggingAspect {
         String method = pjp.getSignature().toShortString();
         Object[] args = pjp.getArgs();
 
-        if (args.length < 7) {
-
-            log.info("→ {} | args={}", method, Arrays.toString(args));
-        } else log.info("→ {} with more then 7 args", method);
+        log.info("→ {} | args={}", method, Arrays.toString(args)); //Arrays.toString(args) может слить в логи пароли
 
         long start = System.currentTimeMillis();
 

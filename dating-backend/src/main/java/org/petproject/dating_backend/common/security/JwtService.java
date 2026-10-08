@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.petproject.dating_backend.user.UserEntity;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,20 @@ public class JwtService {
 
     @Value("${jwt.secret}")
     private String secret;
+
+    @Value("${jwt.expiration.access}")
+    private Long expiration;
+
+    public String generateToken(UserEntity user) {
+        return Jwts.builder()
+                .subject(user.getEmail())
+                .claim(JwtClaims.USER_ID, user.getId())
+                .claim(JwtClaims.ROLES, List.of(user.getRole().name()))
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSignKey())
+                .compact();
+    }
 
     public Long extractUserId(String token) {
         return parseClaims(token).get("userId", Long.class);
