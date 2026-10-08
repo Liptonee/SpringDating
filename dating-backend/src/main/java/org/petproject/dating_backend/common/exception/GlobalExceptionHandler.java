@@ -1,8 +1,10 @@
 package org.petproject.dating_backend.common.exception;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.MinioException;
 import io.swagger.v3.oas.annotations.Hidden;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -21,7 +23,10 @@ import java.util.Map;
 @RestControllerAdvice
 @Slf4j
 @Hidden
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+    private final MeterRegistry registry;
 
     @ExceptionHandler(PhotoException.class)
     public ResponseEntity<ErrorDto> handlePhoto(PhotoException e) {
@@ -131,6 +136,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorDto> handleBadCredentials(BadCredentialsException e) {
         log.warn("Invalid login or password", e);
+        registry.counter("user.logins.total", "result", "failure").increment();
         return ResponseEntity.status(401)
                 .body(new ErrorDto(401,
                         "Invalid login or password",

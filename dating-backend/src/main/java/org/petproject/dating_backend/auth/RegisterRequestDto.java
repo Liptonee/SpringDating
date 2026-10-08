@@ -31,7 +31,7 @@ public record RegisterRequestDto(
                 example = "SecurePass123!",
                 requiredMode = Schema.RequiredMode.REQUIRED)
         @NotNull
-        @Size(min = 6)
+        @Size(min = 6, max = 25)
         String password
 ) {
 }

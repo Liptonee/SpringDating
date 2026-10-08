@@ -1,29 +1,18 @@
 package org.petproject.dating_backend.auth;
 
-import io.micrometer.core.instrument.MeterRegistry;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.petproject.dating_backend.common.exception.ConflictException;
 import org.petproject.dating_backend.common.exception.ErrorDto;
-import org.petproject.dating_backend.common.exception.UnauthorizedException;
-import org.petproject.dating_backend.common.security.CustomUserDetails;
-import org.petproject.dating_backend.common.security.JwtService;
-import org.petproject.dating_backend.common.security.RefreshTokenService;
-import org.petproject.dating_backend.user.*;
+import org.petproject.dating_backend.user.ProfileUserDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
@@ -34,51 +23,10 @@ import java.time.Duration;
 @Tag(name = "Аутентификация", description = "Регистрация, вход, выход, обновление токенов")
 public class AuthController {
 
-    private final AuthenticationManager authManager;
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final UserMapper userMapper;
-    private final RefreshTokenService refreshTokenService;
-    private final JwtService jwtService;
-
-    private final MeterRegistry registry;
+    private final AuthService authService;
 
     @Value("${jwt.refresh.cookie.secured}")
     private boolean isSecuredCookie;
-
-    @Operation(
-            summary = "Вход в систему",
-            description = """
-                    Проверяет email и пароль. При успехе возвращает JWT access token в теле
-                    и устанавливает raw refresh токен в HttpOnly Cookie "refreshToken".
-                    """,
-            security = @SecurityRequirement(name = "none")
-    )
-    @ApiResponse(responseCode = "200", description = "Аутентификация прошла успешно",
-            content = @Content(schema = @Schema(implementation = AuthResponseDto.class)))
-    @ApiResponse(responseCode = "401", description = "Неверный email или пароль",
-            content = @Content(schema = @Schema(implementation = ErrorDto.class)))
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponseDto> login(@Valid @RequestBody LoginRequestDto request) {
-        Authentication authentication = authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.email(),
-                        request.password()
-                )
-        );
-
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        String access = jwtService.generateToken(userDetails.getUser());
-
-        String refresh = refreshTokenService.generateToken();
-        refreshTokenService.save(refresh, userDetails.getUser().getEmail());
-        ResponseCookie cookie = createRefreshCookie(refresh);
-
-        registry.counter("user.logins.total", "result", "success").increment();
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(new AuthResponseDto(access));
-    }
 
 
     @Operation(
@@ -86,8 +34,7 @@ public class AuthController {
             description = """
                     Регистрирует пользователя по email и паролю.
                     Также необходимо имя и пол.
-                    """,
-            security = @SecurityRequirement(name = "none")
+                    """
     )
     @ApiResponse(responseCode = "201", description = "Регистрация прошла успешно",
             content = @Content(schema = @Schema(implementation = ProfileUserDto.class)))
@@ -95,20 +42,31 @@ public class AuthController {
             content = @Content(schema = @Schema(implementation = ErrorDto.class)))
     @PostMapping("/register")
     public ResponseEntity<ProfileUserDto> register(@Valid @RequestBody RegisterRequestDto request) {
-        if (userRepository.existsByEmail(request.email())) {
-            throw new ConflictException("Такой email уже используется", 409);
-        }
+        ProfileUserDto profile = authService.register(request);
+        return ResponseEntity.status(201).body(profile);
+    }
 
-        UserEntity user = new UserEntity();
-        user.setEmail(request.email());
-        user.setPasswordHash(passwordEncoder.encode(request.password()));
-        user.setFirstName(request.firstName());
-        user.setRole(UserRole.USER);
-        user.setReadyForDeck(false);
-        userRepository.save(user);
 
-        registry.counter("user.registrations.total").increment();
-        return ResponseEntity.status(201).body(userMapper.toProfileDto(user));
+    @Operation(
+            summary = "Вход в систему",
+            description = """
+                    Проверяет email и пароль. При успехе возвращает JWT access token в теле
+                    и устанавливает raw refresh токен в HttpOnly Cookie "refreshToken".
+                    """
+    )
+    @ApiResponse(responseCode = "200", description = "Аутентификация прошла успешно",
+            content = @Content(schema = @Schema(implementation = AuthResponseDto.class)))
+    @ApiResponse(responseCode = "401", description = "Неверный email или пароль",
+            content = @Content(schema = @Schema(implementation = ErrorDto.class)))
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponseDto> login(@Valid @RequestBody LoginRequestDto request) {
+        AuthTokens tokens = authService.login(request);
+
+        ResponseCookie cookie = createRefreshCookie(tokens.refreshToken());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(new AuthResponseDto(tokens.accessToken()));
     }
 
 
@@ -117,59 +75,44 @@ public class AuthController {
             description = """
                     Принимает из cookie имеющийся refresh токен, удаляет его
                     и возвращает в теле новый access токен и кладёт в cookie новый refresh.
-                    """,
-            security = @SecurityRequirement(name = "none")
+                    """
     )
     @ApiResponse(responseCode = "200", description = "Ротация прошла успешно",
             content = @Content(schema = @Schema(implementation = AuthResponseDto.class)))
     @ApiResponse(responseCode = "401", description = "Либо refresh не предоставлен, либо он невалидный (нету в бд/истёк TTL)",
             content = @Content(schema = @Schema(implementation = ErrorDto.class)))
     @PostMapping("/refresh")
+    //Недоработка - при повторном использовании уже удалённого refresh-токена нужно инвалидировать все сессии пользователя.
     public ResponseEntity<AuthResponseDto> refresh(
             @CookieValue(name = "refreshToken", required = false) String oldRefresh
     ) {
-        if (oldRefresh == null) throw new UnauthorizedException("Refresh token не предоставлен", 401);
+        AuthTokens tokens = authService.refresh(oldRefresh);
 
-        String username = refreshTokenService.getUsername(oldRefresh);
-        if (username == null) throw new UnauthorizedException("Refresh token не существует", 401);
+        ResponseCookie cookie = createRefreshCookie(tokens.refreshToken());
 
-        UserEntity user = userRepository.findByEmailOrThrow(username);
-        String newAccess = jwtService.generateToken(user);
-        String newRefresh = refreshTokenService.generateToken();
-
-        refreshTokenService.delete(oldRefresh);
-        refreshTokenService.save(newRefresh, user.getEmail());
-
-        ResponseCookie cookie = createRefreshCookie(newRefresh);
-
-        registry.counter("token.refreshes.total").increment();
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(new AuthResponseDto(newAccess));
-
+                .body(new AuthResponseDto(tokens.accessToken()));
     }
-
 
     @Operation(summary = "Выход из системы",
             description = """
                     Принимает из cookie refresh токен, удаляет его
                     и возвращает чистые cookie с пустым телом.
                     При этом access токен всё ещё валиден до истечения TTL.
-                    """,
-            security = @SecurityRequirement(name = "none"))
+                    """)
     @ApiResponse(responseCode = "200", description = "Логаут успешно выполнен")
     @ApiResponse(responseCode = "401", description = "Refresh не предоставлен",
             content = @Content(schema = @Schema(implementation = ErrorDto.class)))
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@CookieValue(value = "refreshToken", required = false) String token) {
-        if (token == null) throw new UnauthorizedException("Refresh token не предоставлен", 401);
-
-        refreshTokenService.delete(token);
+    public ResponseEntity<Void> logout(
+            @CookieValue(value = "refreshToken", required = false) String token
+    ) {
+        authService.logout(token);
 
         ResponseCookie clearCookie = createClearCookie();
 
-        registry.counter("user.logouts.total").increment();
-        return ResponseEntity.ok()
+        return ResponseEntity.status(204)
                 .header(HttpHeaders.SET_COOKIE, clearCookie.toString())
                 .build();
     }
@@ -178,7 +121,7 @@ public class AuthController {
         return ResponseCookie.from("refreshToken", token)
                 .httpOnly(true)
                 .secure(isSecuredCookie)
-                .sameSite("Strict")
+                .sameSite("Lax")
                 .path("/api/auth")
                 .maxAge(Duration.ofDays(7))
                 .build();
@@ -188,11 +131,9 @@ public class AuthController {
         return ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
                 .secure(isSecuredCookie)
-                .sameSite("Strict")
+                .sameSite("Lax")
                 .path("/api/auth")
                 .maxAge(Duration.ZERO)
                 .build();
-
     }
-
 }
