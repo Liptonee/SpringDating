@@ -12,7 +12,7 @@ public interface NotificationRepository extends JpaRepository<NotificationEntity
 
     @Query("""
             SELECT n FROM NotificationEntity n
-            WHERE (n.userId = :curUserId)
+            WHERE (n.userId = :userId)
                 AND (:read IS NULL OR n.isRead = :read)
             ORDER BY n.createdAt DESC
             """)

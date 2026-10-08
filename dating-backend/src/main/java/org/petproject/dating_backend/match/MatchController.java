@@ -9,7 +9,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.common.dto.PageResponse;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,7 +34,7 @@ public class MatchController {
     @GetMapping
     public PageResponse<MatchDto> getMatches(
             @AuthenticationPrincipal Long curUserId,
-            @PageableDefault(size = 20) Pageable pageable
+            @PageableDefault(size = 20) @SortDefault(value = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         return PageResponse.from(matchService.getMatches(curUserId, pageable));
     }

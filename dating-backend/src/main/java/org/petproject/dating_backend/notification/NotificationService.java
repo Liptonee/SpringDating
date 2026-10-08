@@ -20,7 +20,7 @@ public class NotificationService {
     private final MeterRegistry registry;
 
     @Transactional
-    public void create(NotificationRequestDto requestDto){
+    public void create(NotificationRequestDto requestDto) {
         NotificationEntity entity = new NotificationEntity();
         entity.setUserId(requestDto.userId());
         entity.setTitle(requestDto.title());
@@ -42,9 +42,11 @@ public class NotificationService {
             throw new ForbiddenException("Вы не можете прочитать чужое уведомление", 403);
         }
 
-        entity.setIsRead(true);
-        notificationRepository.save(entity);
-        registry.counter("notifications.read.total").increment();
+        if (!entity.isRead()) {
+            entity.setRead(true);
+            notificationRepository.save(entity);
+            registry.counter("notifications.read.total").increment();
+        }
     }
 
     @Transactional(readOnly = true)
@@ -57,7 +59,7 @@ public class NotificationService {
             throw new ForbiddenException("Вы не можете просмотреть чужое уведомление", 403);
         }
 
-        registry.counter("notifications.read_all.total").increment();
+
         return notificationMapper.toResponse(entity);
     }
 
@@ -71,6 +73,7 @@ public class NotificationService {
 
     @Transactional
     public void markAllAsRead(Long curUserId) {
+        registry.counter("notifications.read_all.total").increment();
         notificationRepository.markAllAsRead(curUserId);
     }
 

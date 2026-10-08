@@ -6,18 +6,22 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.common.dto.PageResponse;
 import org.petproject.dating_backend.swipe.SwipeHistoryDto;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api/notifications")
+@RequestMapping("/api/notifications")
 @RequiredArgsConstructor
+@Tag(name = "Уведомления", description = "Чтение, получение уведомлений")
 public class NotificationController {
 
     private final NotificationService notificationService;
@@ -45,11 +49,11 @@ public class NotificationController {
             content = @Content(schema = @Schema(implementation = NotificationResponseDto.class))
     )
     @GetMapping("/{notifId}")
-    public NotificationResponseDto getSingleNotification(
+    public ResponseEntity<NotificationResponseDto> getSingleNotification(
             @AuthenticationPrincipal Long curUserId,
             @PathVariable Long notifId
     ) {
-        return notificationService.getSingleNotification(curUserId, notifId);
+        return ResponseEntity.ok().body(notificationService.getSingleNotification(curUserId, notifId));
     }
 
     @Operation(summary = "Выдаёт все уведомления",
@@ -57,19 +61,20 @@ public class NotificationController {
                     "Возращает PageResponse<SwipeHistoryDto>",
             security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "200", description = "Успех",
-            content = @Content(schema = @Schema(implementation = SwipeHistoryDto.class)))
+            content = @Content(schema = @Schema(implementation = NotificationResponseDto.class)))
     @GetMapping()
     public PageResponse<NotificationResponseDto> getNotifications(
             @AuthenticationPrincipal Long curUserId,
             @RequestParam(value = "read", required = false) Boolean read,
-            @PageableDefault(size = 20) Pageable pageable
+            @PageableDefault(size = 20) @SortDefault(value = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
 
         return PageResponse.from(notificationService.getNotifications(curUserId, read, pageable));
 
     }
 
-    @Operation(summary = "Отметить все уведомления как прочитанные")
+    @Operation(summary = "Отметить все уведомления как прочитанные",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "204", description = "Все уведомления успешно прочитаны")
     @PatchMapping("/read-all")
     public ResponseEntity<Void> markAllAsRead(@AuthenticationPrincipal Long curUserId) {

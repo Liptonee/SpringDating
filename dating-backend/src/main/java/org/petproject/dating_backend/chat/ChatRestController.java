@@ -9,7 +9,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.common.dto.PageResponse;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,7 +49,7 @@ public class ChatRestController {
     @GetMapping()
     public PageResponse<ChatRoomResponseDto> getRooms(
             @AuthenticationPrincipal Long curUserId,
-            @PageableDefault(size = 20) Pageable pageable
+            @PageableDefault(size = 20) @SortDefault(value = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         return PageResponse.from(chatService.getRooms(curUserId, pageable));
     }

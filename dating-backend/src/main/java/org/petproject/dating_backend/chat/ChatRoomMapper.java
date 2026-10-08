@@ -1,8 +1,9 @@
 package org.petproject.dating_backend.chat;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface ChatRoomMapper {
 
     default ChatRoomResponseDto toResponseDto(ChatRoomEntity entity, Long curUserId) {

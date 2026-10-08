@@ -33,7 +33,7 @@ public class PhotoEntity {
     private Long size;
 
     @Column(name = "is_main", nullable = false)
-    private Boolean isMain = false;
+    private boolean isMain = false;
 
     @Column(name = "uploaded_at", nullable = false)
     private Instant uploadedAt = Instant.now();

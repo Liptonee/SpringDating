@@ -101,7 +101,7 @@ public class PhotoService {
         photoEntity.setSize(size);
 
         if (!photoRepository.existsByUserIdAndIsMainTrue(curUserId)) {
-            photoEntity.setIsMain(true);
+            photoEntity.setMain(true);
         }
 
         try (InputStream inputStream = file.getInputStream()) {
@@ -255,7 +255,7 @@ public class PhotoService {
             throw new ForbiddenException("Вы не можете удалить чужое фото", 403);
         }
 
-        boolean wasMain = photo.getIsMain();
+        boolean wasMain = photo.isMain();
 
         photoRepository.delete(photo);
 
@@ -263,7 +263,7 @@ public class PhotoService {
         if (wasMain) {
             List<PhotoEntity> list = photoRepository.findByUserIdOrderByUploadedAtDesc(curUserId);
             if (!list.isEmpty()) {
-                list.getFirst().setIsMain(true);
+                list.getFirst().setMain(true);
                 wasSet = true;
             }
         }

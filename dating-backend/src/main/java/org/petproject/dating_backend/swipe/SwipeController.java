@@ -10,7 +10,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.common.dto.PageResponse;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -45,7 +47,7 @@ public class SwipeController {
     public PageResponse<SwipeHistoryDto> getHistory(
             @AuthenticationPrincipal Long curUserId,
             @RequestParam(required = false) SwipeAction action,
-            @PageableDefault(size = 20) Pageable pageable
+            @PageableDefault(size = 20) @SortDefault(value = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         return PageResponse.from(swipeService.getHistory(curUserId, action, pageable));
     }
@@ -59,7 +61,7 @@ public class SwipeController {
     @GetMapping("/swipes/likes")
     public PageResponse<SwipeHistoryDto> getLiked(
             @AuthenticationPrincipal Long curUserId,
-            @PageableDefault(size = 20) Pageable pageable
+            @PageableDefault(size = 20) @SortDefault(value = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         return PageResponse.from(swipeService.getLiked(curUserId, pageable));
     }

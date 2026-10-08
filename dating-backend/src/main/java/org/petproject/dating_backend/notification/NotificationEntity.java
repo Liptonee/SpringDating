@@ -26,7 +26,7 @@ public class NotificationEntity {
     private String body;
 
     @Column(name = "is_read", nullable = false)
-    private Boolean isRead = false;
+    private boolean isRead = false;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, updatable = false)

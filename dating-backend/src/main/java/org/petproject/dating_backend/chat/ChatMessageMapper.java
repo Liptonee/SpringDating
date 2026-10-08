@@ -3,10 +3,11 @@ package org.petproject.dating_backend.chat;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
+import org.mapstruct.ReportingPolicy;
 
 import java.util.Map;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface ChatMessageMapper {
 
     @Mappings({
