@@ -31,4 +31,5 @@ public record PhotoDto(
         @Schema(description = "Когда фото было загружено", example = "2026-09-25T10:15:30Z")
         Instant uploadedAt
 ) {
+
 }

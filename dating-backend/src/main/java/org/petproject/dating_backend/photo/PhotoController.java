@@ -87,17 +87,29 @@ public class PhotoController {
             security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "200", description = "Успех",
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = PhotoDto.class))))
-    @GetMapping("users/{userId}/photos")
+    @GetMapping("/users/{userId}/photos")
     public ResponseEntity<List<PhotoDto>> getListPhotos(
             @PathVariable() Long userId
     ) {
         return ResponseEntity.ok(photoService.getListPhotos(userId));
     }
 
+    @Operation(summary = "По id помечает фото как главное",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponse(responseCode = "204", description = "Фото успешно удалено")
+    @PatchMapping("/photos/{photoId}")
+    public ResponseEntity<Void> setMainPhoto(
+            @AuthenticationPrincipal Long curUserId,
+            @PathVariable Long photoId
+    ) {
+        photoService.setMainPhoto(curUserId, photoId);
+        return ResponseEntity.noContent().build();
+    }
+
     @Operation(summary = "Удаляет запрашиваемое фото у текущего пользователя",
             security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "204", description = "Фото успешно удалено")
-    @DeleteMapping("/{photoId}")
+    @DeleteMapping("/photos/{photoId}")
     public ResponseEntity<Void> deletePhoto(
             @AuthenticationPrincipal Long curUserId,
             @PathVariable Long photoId

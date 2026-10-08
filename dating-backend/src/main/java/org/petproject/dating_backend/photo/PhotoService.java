@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.minio.*;
 import io.minio.errors.MinioException;
 import lombok.extern.slf4j.Slf4j;
+import org.petproject.dating_backend.common.exception.BadRequestException;
 import org.petproject.dating_backend.common.exception.ForbiddenException;
 import org.petproject.dating_backend.common.exception.NotFoundException;
 import org.petproject.dating_backend.common.exception.PhotoException;
@@ -60,14 +61,24 @@ public class PhotoService {
 
 
     @Transactional
-    @CacheEvict(value = CACHE_NAME, key = "'list:' + #curUserId")
+    @Caching(
+            evict = {
+                    @CacheEvict(value = CACHE_NAME, key = "'list:' + #curUserId"),
+                    @CacheEvict(value = CACHE_NAME, key = "'hasMain:' + #curUserId")
+            }
+    )
     public Long uploadPhoto(Long curUserId, MultipartFile file) throws MinioException {
+        if (file.isEmpty()) {
+            throw new BadRequestException("Файл с фото пуст", 400);
+        }
+
         Long size = file.getSize();
         String contentType = file.getContentType() == null
                 ? "image/png"
                 : file.getContentType();
 
         //Блокировка строки, чтобы избежать race condition
+        //Однако можно добавить photo_count и атомарно увеличивать
         UserEntity user = userRepository.findByIdForUpdate(curUserId)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден", 404));
         validate(file, curUserId, size, contentType);
@@ -99,7 +110,7 @@ public class PhotoService {
                             .bucket(BUCKET_NAME)
                             .object(objectName)
                             .stream(inputStream, file.getSize(), -1L)
-                            .contentType(file.getContentType())
+                            .contentType(contentType)
                             .build()
 
             );
@@ -175,7 +186,11 @@ public class PhotoService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = CACHE_NAME, key = "'list:' + #userId")
+    @Cacheable(
+            value = CACHE_NAME,
+            key = "'list:' + #userId",
+            unless = "#result == null || !#result.?[url == null].isEmpty()"
+    )
     public List<PhotoDto> getListPhotos(Long userId) {
         return photoRepository.findByUserIdOrderByUploadedAtDesc(userId)
                 .stream()
@@ -205,20 +220,36 @@ public class PhotoService {
     }
 
     @Transactional
+    public void setMainPhoto(Long curUserId, Long photoId) {
+        PhotoEntity photo = photoRepository.findById(photoId).orElseThrow(
+                () -> new NotFoundException("Фото с таким id не существует", 404)
+        );
+        if (!photo.getUserId().equals(curUserId)) {
+            throw new ForbiddenException("Вы не можете управлять чужим фото", 403);
+        }
+
+        photoRepository.setNewMainPhoto(curUserId, photoId);
+
+    }
+
+
+    @Transactional
     @Caching(
             evict = {
                     @CacheEvict(value = CACHE_NAME, key = "'list:' + #curUserId"),
                     @CacheEvict(value = CACHE_NAME, key = "'single:dto' + #photoId"),
-                    @CacheEvict(value = CACHE_NAME, key = "'single:url' + #photoId")
+                    @CacheEvict(value = CACHE_NAME, key = "'single:url' + #photoId"),
+                    @CacheEvict(value = CACHE_NAME, key = "'hasMain:' + #curUserId")
             }
     )
     public void deletePhoto(Long curUserId, Long photoId) throws MinioException {
         UserEntity user = userRepository.findByIdForUpdate(curUserId)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден", 404));
 
-        PhotoEntity photo = photoRepository.findById(photoId).orElse(null);
+        PhotoEntity photo = photoRepository.findById(photoId).orElseThrow(
+                () -> new NotFoundException("Фото с таким id не существует", 404)
+        );
 
-        if (photo == null) return;
 
         if (!photo.getUserId().equals(curUserId)) {
             throw new ForbiddenException("Вы не можете удалить чужое фото", 403);
@@ -247,7 +278,7 @@ public class PhotoService {
                             .build()
             );
         } catch (MinioException e) {
-            log.error("The photo could not be deleted from MiniO, but the photo was deleted from the database.");
+            log.error("The photo could not be deleted from MiniO", e);
             throw e;
         }
 
@@ -255,6 +286,7 @@ public class PhotoService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = CACHE_NAME, key = "'hasMain:' + #userId")
     public boolean hasMainPhoto(Long userId) {
         return photoRepository.existsByUserIdAndIsMainTrue(userId);
     }

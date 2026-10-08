@@ -5,6 +5,7 @@ import org.petproject.dating_backend.common.exception.NotFoundException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +28,13 @@ public interface PhotoRepository extends JpaRepository<PhotoEntity, Long> {
     boolean existsByUserIdAndIsMainTrue(Long userId);
 
     @Modifying
-    @Query("UPDATE PhotoEntity p SET p.isMain = false WHERE p.userId = :userId AND p.isMain = true")
-    void clearMainFlag(Long userId);
+    @Query("""
+            UPDATE PhotoEntity p
+            SET p.isMain = CASE WHEN p.id = :photoId THEN true ELSE false END
+            WHERE p.userId = :userId
+              AND (p.isMain = true OR p.id = :photoId)
+            """)
+    void setNewMainPhoto(@Param("userId") Long userId, @Param("photoId") Long photoId);
+
 
 }
