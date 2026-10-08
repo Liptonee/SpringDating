@@ -73,7 +73,8 @@ public class NotificationEventListener {
     public void onChatMessage(ChatMessageEvent event) {
         String title = "Title for message";
         String body = String.format(
-                "Body for message. Sender id: %d, Receiver id %d, content %s",
+                "Body for message. Room id: %d, Sender id: %d, Receiver id: %d, content %s",
+                event.roomId(),
                 event.senderId(),
                 event.receiverId(),
                 event.content());

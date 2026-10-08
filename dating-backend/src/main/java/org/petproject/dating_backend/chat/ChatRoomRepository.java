@@ -26,16 +26,22 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoomEntity, Long> 
         ChatRoomEntity r = new ChatRoomEntity();
         r.setFirstUserId(Math.min(a, b));
         r.setSecondUserId(Math.max(a, b));
-        r.setCreatedAt(Instant.now());
+        Instant now = Instant.now();
+        r.setCreatedAt(now);
+        r.setLastMessageAt(now);
         return r;
     }
 
     @Query("""
-                select r from ChatRoomEntity r
-                where r.secondUserId = :userId or r.firstUserId = :userId
-                order by r.createdAt desc
-            """)
+            select r from ChatRoomEntity r
+            where r.firstUserId = :userId or r.secondUserId = :userId
+            order by r.lastMessageAt desc nulls last
+        """)
     Page<ChatRoomEntity> findAllByUserId(@Param("userId") Long userId, Pageable pageable);
+
+    @Modifying
+    @Query("UPDATE ChatRoomEntity r SET r.lastMessageAt = :timestamp WHERE r.id = :roomId")
+    void updateLastMessageAt(@Param("roomId") Long roomId, @Param("timestamp") Instant timestamp);
 
     @Modifying
     @Query("""

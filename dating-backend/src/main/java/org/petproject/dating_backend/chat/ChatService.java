@@ -7,7 +7,6 @@ import org.petproject.dating_backend.common.exception.ForbiddenException;
 import org.petproject.dating_backend.common.exception.NotFoundException;
 import org.petproject.dating_backend.match.MatchCreatedEvent;
 import org.petproject.dating_backend.match.UndoMatchEvent;
-import org.petproject.dating_backend.swipe.UndoLikeEvent;
 import org.petproject.dating_backend.user.UserService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
@@ -16,8 +15,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.time.Instant;
 import java.util.List;
@@ -58,6 +55,7 @@ public class ChatService {
         messageEntity.setCreatedAt(Instant.now());
         messageRepository.save(messageEntity);
 
+        roomRepository.updateLastMessageAt(roomId, messageEntity.getCreatedAt());
 
         Long receiverId = roomEntity.getFirstUserId().equals(curUserId)
                 ? roomEntity.getSecondUserId()
@@ -65,6 +63,7 @@ public class ChatService {
 
         eventPublisher.publishEvent(new ChatMessageEvent(
                 messageEntity.getId(),
+                roomId,
                 curUserId,
                 receiverId,
                 messageEntity.getContent()
@@ -88,11 +87,13 @@ public class ChatService {
 
     @Transactional(readOnly = true)
     public List<ChatMessageResponseDto> getMessages(Long curUserId, Long roomId, Long beforeId) {
-        if (!roomRepository.existsById(roomId)) {
-            throw new NotFoundException("Комната с таким id не существует", 404);
-        }
+
         if (!roomRepository.hasMemberById(roomId, curUserId)) {
-            throw new ForbiddenException("Пользователь не является участником комнаты (чата)", 403);
+            if (!roomRepository.existsById(roomId)) {
+                throw new NotFoundException("Комната с таким id не существует", 404);
+            } else {
+                throw new ForbiddenException("Пользователь не является участником комнаты (чата)", 403);
+            }
         }
 
         Pageable pageable = PageRequest.of(0, PAGE_SIZE);
@@ -112,21 +113,17 @@ public class ChatService {
         return dtos.reversed();
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
+    @Transactional
     public void createRoom(MatchCreatedEvent event) {
         ChatRoomEntity roomEntity = roomRepository.createBetween(event.firstUserId(), event.secondUserId());
-        try {
-            roomRepository.save(roomEntity);
-            registry.counter("chat.rooms.created.total").increment();
-        } catch (Exception e) {
-            log.error("Лайк+мэтч успешно созданы (коммит), но команту-чат создать не удалось." +
-                            "matchId - {}, firstUserId - {}, secondUserId - {}",
-                    event.matchId(),
-                    event.firstUserId(),
-                    event.secondUserId());
-        }
+
+        roomRepository.save(roomEntity);
+        registry.counter("chat.rooms.created.total").increment();
+
     }
 
+    @Transactional(readOnly = true)
     public Page<ChatRoomResponseDto> getRooms(Long curUserId, Pageable pageable) {
 
         return roomRepository.findAllByUserId(curUserId, pageable)
@@ -141,4 +138,8 @@ public class ChatService {
         registry.counter("chat.rooms.deleted.total").increment();
     }
 
+    @Transactional(readOnly = true)
+    public boolean isMember(Long userId, Long roomId) {
+        return roomRepository.hasMemberById(roomId, userId);
+    }
 }

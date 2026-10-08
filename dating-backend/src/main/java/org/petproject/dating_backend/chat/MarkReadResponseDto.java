@@ -13,7 +13,7 @@ public record MarkReadResponseDto(
         Long readerId,
 
         @Schema(description = "Время, когда сообщение было прочтено", example = "2025-01-15T10:30:00Z")
-        Instant created_at
+        Instant createdAt
 
 ) {
 }

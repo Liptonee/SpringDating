@@ -4,6 +4,8 @@ public record ChatMessageEvent(
 
         Long messageId,
 
+        Long roomId,
+
         Long senderId,
 
         Long receiverId,

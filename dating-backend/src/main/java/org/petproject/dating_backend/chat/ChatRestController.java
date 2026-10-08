@@ -1,6 +1,7 @@
 package org.petproject.dating_backend.chat;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,16 +29,18 @@ public class ChatRestController {
 
     @Operation(summary = "История сообщений комнаты",
             description = "Cursor-based. Передайте beforeId=null для первой загрузки, " +
-                    "затем beforeId = 'id самого старого загруженного сообщения' для подгрузки вверх." +
+                    "затем beforeId = 'id самого старого загруженного сообщения' для подгрузки вверх. " +
                     "Pageable с фиксированным размером в 50",
             security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponse(responseCode = "200", description = "Успех",
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = ChatMessageResponseDto.class))))
     @GetMapping("/{roomId}/messages")
-    public List<ChatMessageResponseDto> getMessages(
+    public ResponseEntity<List<ChatMessageResponseDto>> getMessages(
             @AuthenticationPrincipal Long curUserId,
             @PathVariable Long roomId,
             @RequestParam(required = false) Long beforeId
     ) {
-        return chatService.getMessages(curUserId, roomId, beforeId);
+        return ResponseEntity.ok().body(chatService.getMessages(curUserId, roomId, beforeId));
     }
 
 

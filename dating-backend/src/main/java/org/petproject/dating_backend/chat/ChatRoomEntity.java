@@ -14,7 +14,11 @@ import java.time.Instant;
         uniqueConstraints = @UniqueConstraint(
                 name = "uq_chat_rooms_id_pair",
                 columnNames = {"first_user_id", "second_user_id"}
-        )
+        ),
+        indexes = {
+                @Index(name = "idx_chat_rooms_first_last", columnList = "first_user_id, last_message_at DESC"),
+                @Index(name = "idx_chat_rooms_second_last", columnList = "second_user_id, last_message_at DESC")
+        }
 )
 public class ChatRoomEntity {
 
@@ -28,6 +32,9 @@ public class ChatRoomEntity {
 
     @Column(name = "second_user_id", nullable = false)
     private Long secondUserId;
+
+    @Column(name = "last_message_at")
+    private Instant lastMessageAt;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
