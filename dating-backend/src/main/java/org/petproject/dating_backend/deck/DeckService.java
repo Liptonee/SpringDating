@@ -1,6 +1,7 @@
 package org.petproject.dating_backend.deck;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.minio.errors.MinioException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.petproject.dating_backend.photo.PhotoService;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -22,34 +24,29 @@ public class DeckService {
 
     private final MeterRegistry registry;
 
-    @Transactional(readOnly = true)
     public List<CardDto> getDeck(Long curUserId, Short quantity) {
         List<GetUserDto> eligibleUsers = userService.getByPreferences(curUserId, quantity);
-        List<CardDto> cards = new ArrayList<>();
-
-        for (GetUserDto user : eligibleUsers) {
-            String url = null;
-            try {
-                url = photoService.getMainPhotoUrl(user.id());
-            } catch (Exception e) {
-                log.warn("No main photo for userId: {}", user.id());
-            }
-            cards.add(new CardDto(
-                    user.id(),
-                    url,
-                    user.firstName(),
-                    user.shortAbout(),
-                    user.age()
-            ));
+        if (eligibleUsers.isEmpty()) {
+            registry.counter("deck.requests.total").increment();
+            registry.counter("deck.empty.total").increment();
+            return List.of();
         }
+
+        List<Long> ids = eligibleUsers.stream().map(GetUserDto::id).toList();
+        Map<Long, String> mainPhotoUrls = photoService.getMainPhotoUrls(ids);
+
+        List<CardDto> cards = eligibleUsers.stream()
+                .map(u -> new CardDto(
+                        u.id(),
+                        mainPhotoUrls.get(u.id()),
+                        u.firstName(),
+                        u.shortAbout(),
+                        u.age()
+                ))
+                .toList();
 
         registry.counter("deck.requests.total").increment();
-        if (cards.isEmpty()) {
-            registry.counter("deck.empty.total").increment();
-        }
-
         return cards;
-
     }
 
 

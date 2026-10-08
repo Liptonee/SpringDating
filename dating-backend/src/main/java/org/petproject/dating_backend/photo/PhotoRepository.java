@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,5 +37,7 @@ public interface PhotoRepository extends JpaRepository<PhotoEntity, Long> {
             """)
     void setNewMainPhoto(@Param("userId") Long userId, @Param("photoId") Long photoId);
 
+    @Query("SELECT p FROM PhotoEntity p WHERE p.isMain = true AND p.userId IN :userIds")
+    List<PhotoEntity> findMainPhotosByUserIds(@Param("userIds") Collection<Long> userIds);
 
 }

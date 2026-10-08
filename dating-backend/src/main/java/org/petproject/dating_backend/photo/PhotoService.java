@@ -20,10 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -292,19 +289,14 @@ public class PhotoService {
     }
 
     @Transactional(readOnly = true)
-    public String getMainPhotoUrl(Long userId) throws MinioException {
-        PhotoEntity photoEntity = photoRepository.findMainPhoto(userId).orElseThrow(
-                () -> new NotFoundException("У пользователь нет главного фото", 404)
-        );
+    public Map<Long, String> getMainPhotoUrls(Collection<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) return Map.of();
 
-        return minio.getPresignedObjectUrl(
-                GetPresignedObjectUrlArgs.builder()
-                        .method(Http.Method.GET)
-                        .bucket(BUCKET_NAME)
-                        .object(photoEntity.getObjectName())
-                        .expiry(6, TimeUnit.HOURS)
-                        .build()
-        );
+        return photoRepository.findMainPhotosByUserIds(userIds).stream()
+                .collect(Collectors.toMap(
+                        PhotoEntity::getUserId,
+                        p -> generatePresignedUrl(p.getObjectName())
+                ));
     }
 
 }
