@@ -33,10 +33,10 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoomEntity, Long> 
     }
 
     @Query("""
-            select r from ChatRoomEntity r
-            where r.firstUserId = :userId or r.secondUserId = :userId
-            order by r.lastMessageAt desc nulls last
-        """)
+                select r from ChatRoomEntity r
+                where r.firstUserId = :userId or r.secondUserId = :userId
+                order by r.lastMessageAt desc nulls last
+            """)
     Page<ChatRoomEntity> findAllByUserId(@Param("userId") Long userId, Pageable pageable);
 
     @Modifying

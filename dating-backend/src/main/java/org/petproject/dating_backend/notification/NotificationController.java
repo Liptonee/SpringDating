@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.common.dto.PageResponse;
-import org.petproject.dating_backend.swipe.SwipeHistoryDto;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -34,7 +33,7 @@ public class NotificationController {
     public ResponseEntity<Void> read(
             @AuthenticationPrincipal Long curUserId,
             @PathVariable Long notifId
-    ){
+    ) {
         notificationService.read(curUserId, notifId);
         return ResponseEntity.noContent().build();
     }

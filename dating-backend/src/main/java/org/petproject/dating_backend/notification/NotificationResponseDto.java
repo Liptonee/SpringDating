@@ -25,4 +25,5 @@ public record NotificationResponseDto(
 
         @Schema(description = "Когда создано", example = "2026-10-03T12:34:56Z")
         Instant createdAt
-) {}
+) {
+}

@@ -11,8 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import java.util.List;
-
 @Component
 @RequiredArgsConstructor
 @Async
@@ -25,7 +23,7 @@ public class NotificationEventListener {
     private final ObjectProvider<NotificationEventListener> selfProvider;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void onMatchCreated(MatchCreatedEvent event){
+    public void onMatchCreated(MatchCreatedEvent event) {
         String title = "Title for match created";
         String body = "Congratulations! Body for match created. ";
 

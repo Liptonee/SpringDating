@@ -10,7 +10,6 @@ import java.util.Map;
 public interface ChatMessageMapper {
 
 
-
     @Mapping(target = "senderName", expression = "java(senderNames.get(messageEntity.getSenderId()))")
     @Mapping(target = "isRead", expression = "java(messageEntity.isRead())")
     ChatMessageResponseDto toDto(ChatMessageEntity messageEntity, Map<Long, String> senderNames);

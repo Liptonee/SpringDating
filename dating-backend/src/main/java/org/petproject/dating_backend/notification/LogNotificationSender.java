@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class LogNotificationSender implements NotificationSender{
+public class LogNotificationSender implements NotificationSender {
 
     @Override
     public void send(Long userId, String title, String body) {

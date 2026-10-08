@@ -1,16 +1,13 @@
 package org.petproject.dating_backend.deck;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.minio.errors.MinioException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.petproject.dating_backend.photo.PhotoService;
 import org.petproject.dating_backend.user.GetUserDto;
 import org.petproject.dating_backend.user.UserService;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 

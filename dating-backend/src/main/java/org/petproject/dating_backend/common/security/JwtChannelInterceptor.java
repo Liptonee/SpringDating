@@ -82,8 +82,8 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
 
     /**
      * Извлекает roomId из destination вида:
-     *   /topic/chat/room/{roomId}
-     *   /topic/chat/room/{roomId}/read
+     * /topic/chat/room/{roomId}
+     * /topic/chat/room/{roomId}/read
      * Возвращает null, если destination не про чат-комнату.
      */
     private Long extractRoomId(String destination) {
