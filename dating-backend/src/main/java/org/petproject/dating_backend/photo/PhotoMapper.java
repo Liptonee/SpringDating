@@ -8,6 +8,7 @@ import org.mapstruct.ReportingPolicy;
 public interface PhotoMapper {
 
     @Mapping(source = "url", target = "url")
+    @Mapping(target = "isMain", expression = "java(entity.isMain())")
     PhotoDto toDto(PhotoEntity entity, String url);
 
 }
