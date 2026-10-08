@@ -4,7 +4,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import org.petproject.dating_backend.swipe.SwipeAction;
 import org.petproject.dating_backend.swipe.SwipeRepository;
-import org.petproject.dating_backend.swipe.UndoSwipeEvent;
+import org.petproject.dating_backend.swipe.UndoLikeEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -70,9 +70,11 @@ public class MatchService {
 
     @Transactional
     @EventListener
-    public void undoMatch(UndoSwipeEvent event) {
+    public void undoMatch(UndoLikeEvent event) {
         matchRepository.deleteBetween(event.fromUserId(), event.toUserId());
         registry.counter("matches.undone.total").increment();
+        eventPublisher.publishEvent(new UndoMatchEvent(event.toUserId(), event.fromUserId()));
+
     }
 
 }

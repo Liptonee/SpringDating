@@ -34,7 +34,7 @@ public class SwipeController {
             @AuthenticationPrincipal Long curUserId,
             @RequestBody @Valid SwipeRequestDto swipeRequestDto
     ) {
-        return ResponseEntity.ok(swipeService.swipe(curUserId, swipeRequestDto));
+        return ResponseEntity.status(201).body(swipeService.swipe(curUserId, swipeRequestDto));
     }
 
     @Operation(summary = "Выдаёт историю свайпов, т.е. те свайпы которые совершил пользователь.",
@@ -54,12 +54,12 @@ public class SwipeController {
 
     @Operation(summary = "Выдаёт те свайпы, в которых пользователь является целью, т.е. лайкнутым.",
             description = "Имеется фильтрация, пагинация. Сортировка фиксирована createdAt DESC" +
-                    "Возращает PageResponse<SwipeHistoryDto>",
+                    "Возращает PageResponse<SwipeLikedDto>",
             security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "200", description = "Успех",
-            content = @Content(schema = @Schema(implementation = SwipeHistoryDto.class)))
+            content = @Content(schema = @Schema(implementation = SwipeLikedDto.class)))
     @GetMapping("/swipes/likes")
-    public PageResponse<SwipeHistoryDto> getLiked(
+    public PageResponse<SwipeLikedDto> getLiked(
             @AuthenticationPrincipal Long curUserId,
             @PageableDefault(size = 20) @SortDefault(value = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
@@ -68,11 +68,11 @@ public class SwipeController {
 
     @Operation(summary = "Отменяет свайп. Также отменяется и мэтч.",
             security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponse(responseCode = "204", description = "Фото успешно удалено")
+    @ApiResponse(responseCode = "204", description = "Свайп успешно отменён")
     @DeleteMapping("/swipes/{swipeId}")
     public ResponseEntity<Void> undoSwipe(
             @AuthenticationPrincipal Long curUserId,
-            @PathVariable() Long swipeId
+            @PathVariable Long swipeId
     ) {
         swipeService.undoSwipe(curUserId, swipeId);
         return ResponseEntity.noContent().build();

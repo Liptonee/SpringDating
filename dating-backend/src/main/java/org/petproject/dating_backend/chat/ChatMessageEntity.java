@@ -14,7 +14,7 @@ import java.time.Instant;
         indexes = {
                 @Index(
                         name = "idx_chat_messages_room_created",
-                        columnList = "room_id, created_at DESC"
+                        columnList = "room_id, createdAt DESC"
                 ),
         }
 )

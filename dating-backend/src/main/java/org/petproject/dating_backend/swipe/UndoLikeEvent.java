@@ -1,6 +1,6 @@
 package org.petproject.dating_backend.swipe;
 
-public record UndoSwipeEvent (
+public record UndoLikeEvent(
 
         Long swipeId,
 

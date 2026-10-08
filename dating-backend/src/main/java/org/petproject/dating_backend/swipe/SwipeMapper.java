@@ -8,4 +8,6 @@ public interface SwipeMapper {
 
     SwipeHistoryDto toHistoryDto(SwipeEntity entity);
 
+    SwipeLikedDto toLikedDto(SwipeEntity entity);
+
 }

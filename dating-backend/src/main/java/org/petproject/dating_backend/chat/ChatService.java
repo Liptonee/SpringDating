@@ -6,7 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.petproject.dating_backend.common.exception.ForbiddenException;
 import org.petproject.dating_backend.common.exception.NotFoundException;
 import org.petproject.dating_backend.match.MatchCreatedEvent;
-import org.petproject.dating_backend.swipe.UndoSwipeEvent;
+import org.petproject.dating_backend.match.UndoMatchEvent;
+import org.petproject.dating_backend.swipe.UndoLikeEvent;
 import org.petproject.dating_backend.user.UserService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
@@ -135,8 +136,8 @@ public class ChatService {
 
     @Transactional
     @EventListener
-    public void deleteRoom(UndoSwipeEvent event) {
-        roomRepository.deleteBetween(event.fromUserId(), event.toUserId());
+    public void deleteRoom(UndoMatchEvent event) {
+        roomRepository.deleteBetween(event.firstUserId(), event.secondUserId());
         registry.counter("chat.rooms.deleted.total").increment();
     }
 

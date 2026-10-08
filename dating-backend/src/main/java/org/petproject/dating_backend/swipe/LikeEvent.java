@@ -10,7 +10,7 @@ public record LikeEvent(
 
         Long toId,
 
-        Instant created_at
+        Instant createdAt
 
 ) {
 }

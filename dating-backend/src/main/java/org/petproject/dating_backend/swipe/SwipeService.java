@@ -8,6 +8,7 @@ import org.petproject.dating_backend.common.exception.ForbiddenException;
 import org.petproject.dating_backend.common.exception.NotFoundException;
 import org.petproject.dating_backend.match.MatchService;
 import org.petproject.dating_backend.user.UserRepository;
+import org.petproject.dating_backend.user.UserService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -24,6 +25,7 @@ public class SwipeService {
 
     private final SwipeRepository swipeRepository;
     private final UserRepository userRepository;
+    private final UserService userService;
     private final MatchService matchService;
     private final SwipeMapper swipeMapper;
 
@@ -31,13 +33,16 @@ public class SwipeService {
 
     private final ApplicationEventPublisher eventPublisher;
 
-    @Transactional
+    @Transactional(noRollbackFor = DataIntegrityViolationException.class)
     public SwipeResponseDto swipe(Long curUserId, SwipeRequestDto swipeRequestDto) {
         if (curUserId.equals(swipeRequestDto.toId())) {
             throw new BadRequestException("Нельзя свайпам самого себя", 400);
         }
         if (!userRepository.existsById(swipeRequestDto.toId())) {
             throw new NotFoundException("Пользователь не найден", 404);
+        }
+        if (!userService.getNotReadyFields(curUserId).isEmpty()) {
+            throw new ForbiddenException("Пользователь не может свайпать по не заполнит профиль", 403);
         }
         if (swipeRepository.existsByFromIdAndToId(curUserId, swipeRequestDto.toId())) {
             log.debug("Duplicate swipe from {} to {}", curUserId, swipeRequestDto.toId());
@@ -64,7 +69,7 @@ public class SwipeService {
                     swipeEntity.getFromId(),
                     swipeEntity.getToId(),
                     swipeEntity.getCreatedAt()
-                    ));
+            ));
         }
 
         boolean isMatched = matchService.doMatch(curUserId, swipeRequestDto.toId(), swipeRequestDto.action());
@@ -81,9 +86,9 @@ public class SwipeService {
     }
 
     @Transactional(readOnly = true)
-    public Page<SwipeHistoryDto> getLiked(Long curUserId, Pageable pageable) {
+    public Page<SwipeLikedDto> getLiked(Long curUserId, Pageable pageable) {
 
-        return swipeRepository.findAllForLiked(curUserId, pageable).map(swipeMapper::toHistoryDto);
+        return swipeRepository.findAllForLiked(curUserId, pageable).map(swipeMapper::toLikedDto);
 
     }
 
@@ -101,11 +106,7 @@ public class SwipeService {
         registry.counter("swipes.undone.total").increment();
 
         if (swipeEntity.getAction().equals(SwipeAction.LIKE)) {
-            Long secondOneUserId = swipeEntity.getFromId().equals(curUserId)
-                    ? swipeEntity.getToId()
-                    : swipeEntity.getFromId();
-            eventPublisher.publishEvent(new UndoSwipeEvent(swipeId, curUserId, secondOneUserId));
-
+            eventPublisher.publishEvent(new UndoLikeEvent(swipeId, curUserId, swipeEntity.getToId()));
         }
 
     }
