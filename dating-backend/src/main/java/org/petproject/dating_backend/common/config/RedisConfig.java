@@ -32,7 +32,7 @@ public class RedisConfig {
                 GenericJacksonJsonRedisSerializer.builder()
                         .customize(builder -> builder.activateDefaultTyping(
                                 ptv,
-                                DefaultTyping.NON_FINAL_AND_ENUMS,
+                                DefaultTyping.NON_FINAL_AND_RECORDS,
                                 JsonTypeInfo.As.WRAPPER_ARRAY))
                         .build();
 

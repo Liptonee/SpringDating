@@ -9,6 +9,7 @@ import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
+import java.security.Principal;
 import java.time.Instant;
 
 @Controller
@@ -21,10 +22,11 @@ public class ChatWebSocketController {
     @MessageMapping("/chat/room/{roomId}/sendMessage")
     @SendTo("/topic/chat/room/{roomId}")
     public ChatMessageResponseDto sendMessage(
-            @AuthenticationPrincipal Long curUserId,
+            Principal principal,
             @DestinationVariable Long roomId,
             @Payload @Valid ChatMessageRequestDto request
     ) {
+        Long curUserId = Long.valueOf(principal.getName());
         return chatService.sendMessage(curUserId, roomId, request);
     }
 
@@ -32,9 +34,10 @@ public class ChatWebSocketController {
     @MessageMapping("/chat/room/{roomId}/markRead")
     @SendTo("/topic/chat/room/{roomId}/read")
     public MarkReadResponseDto markRead(
-            @AuthenticationPrincipal Long curUserId,
+            Principal principal,
             @DestinationVariable Long roomId
     ) {
+        Long curUserId = Long.valueOf(principal.getName());
         chatService.markRead(curUserId, roomId);
         return new MarkReadResponseDto(roomId, curUserId, Instant.now());
     }
