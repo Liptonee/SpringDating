@@ -299,4 +299,23 @@ public class PhotoService {
                 ));
     }
 
+    @Transactional(readOnly = true)
+    public PhotoDto getMainPhoto(Long userId) throws MinioException {
+
+        PhotoEntity photoEntity = photoRepository.findMain(userId).orElseThrow(
+                () -> new NotFoundException("Главное фото не найдено", 404)
+        );
+
+        String url = minio.getPresignedObjectUrl(
+                GetPresignedObjectUrlArgs.builder()
+                        .method(Http.Method.GET)
+                        .bucket(BUCKET_NAME)
+                        .object(photoEntity.getObjectName())
+                        .expiry(6, TimeUnit.HOURS)
+                        .build()
+        );
+
+        return photoMapper.toDto(photoEntity, url);
+
+    }
 }

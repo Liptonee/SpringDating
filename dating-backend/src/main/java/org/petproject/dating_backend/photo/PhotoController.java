@@ -67,6 +67,18 @@ public class PhotoController {
         return ResponseEntity.ok().body(photoService.getSinglePhoto(photoId));
     }
 
+    @Operation(summary = "Возвращает главное фото",
+            description = "Возвращает метаданные о главном фото + временную ссылку на само фото.",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponse(responseCode = "200", description = "Успех",
+            content = @Content(schema = @Schema(implementation = PhotoDto.class)))
+    @GetMapping("/users/{userId}/photos/main")
+    public ResponseEntity<PhotoDto> getMainPhoto(
+            @PathVariable Long userId
+    ) throws MinioException {
+        return ResponseEntity.ok().body(photoService.getMainPhoto(userId));
+    }
+
     @Operation(summary = "Возвращает временный url запрашиваемого фото по id",
             description = "Возвращает временный url запрашиваемого фото по id.",
             security = @SecurityRequirement(name = "bearerAuth"))

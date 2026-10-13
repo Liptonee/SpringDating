@@ -23,10 +23,12 @@ public interface PhotoRepository extends JpaRepository<PhotoEntity, Long> {
         );
     }
 
-    @Query("SELECT p FROM PhotoEntity p WHERE p.isMain = true AND p.userId = :userId")
-    Optional<PhotoEntity> findMainPhoto(Long userId);
-
-    boolean existsByUserIdAndIsMainTrue(Long userId);
+    @Query("""
+            select case when count(p) > 0 then true else false end
+            from PhotoEntity p
+            where p.userId = :userId and p.isMain
+""")
+    boolean existsByUserIdAndIsMainTrue(@Param("userId") Long userId);
 
     @Modifying
     @Query("""
@@ -39,5 +41,12 @@ public interface PhotoRepository extends JpaRepository<PhotoEntity, Long> {
 
     @Query("SELECT p FROM PhotoEntity p WHERE p.isMain = true AND p.userId IN :userIds")
     List<PhotoEntity> findMainPhotosByUserIds(@Param("userIds") Collection<Long> userIds);
+
+    @Query("""
+            select p from PhotoEntity p
+            where p.userId = :userId and p.isMain = true
+""")
+    Optional<PhotoEntity> findMain(@Param("userId") Long userId);
+
 
 }
