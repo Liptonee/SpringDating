@@ -42,7 +42,7 @@ public class UserService {
         return userMapper.toGetDto(userRepository.findByIdOrElseThrow(userId));
     }
 
-    @Transactional()
+    @Transactional
     @Caching(
             put = @CachePut(value = CACHE_NAME, key = "'profile:' + #curUserId"),
             evict = @CacheEvict(value = CACHE_NAME, key = "'get:' + #curUserId")
@@ -86,7 +86,7 @@ public class UserService {
                 ? patchProfileUserDto.preferredAgeMax()
                 : userEntity.getPreferredAgeMax();
         if (newMin != null && newMax != null && newMin > newMax) {
-            throw new BadRequestException("Минимум диапазона должен быть <= максимума", 400);
+            throw new BadRequestException("Минимум диапазона возраста должен быть <= максимума", 400);
         }
         userEntity.setPreferredAgeMin(newMin);
         userEntity.setPreferredAgeMax(newMax);
