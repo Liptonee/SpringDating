@@ -30,8 +30,8 @@ public class PhotoService {
 
 
     private static final Set<String> ALLOWED_TYPES = Set.of("image/jpeg", "image/png", "image/webp");
-    private static final long MAX_PHOTOS = 5;
-    private static final long MAX_SIZE_BYTES = 5 * 1024 * 1024L; // 5 MB
+    public static final int MAX_PHOTOS = 5;
+    public static final long MAX_SIZE_BYTES = 5 * 1024 * 1024L; // 5 MB
     private static final String CACHE_NAME = "photos";
     private final String BUCKET_NAME;
 
@@ -64,7 +64,7 @@ public class PhotoService {
                     @CacheEvict(value = CACHE_NAME, key = "'hasMain:' + #curUserId")
             }
     )
-    public Long uploadPhoto(Long curUserId, MultipartFile file) throws MinioException {
+    public Long uploadPhoto(Long curUserId, MultipartFile file) {
         if (file.isEmpty()) {
             throw new BadRequestException("Файл с фото пуст", 400);
         }
@@ -111,7 +111,7 @@ public class PhotoService {
                             .build()
 
             );
-        } catch (IOException e) {
+        } catch (IOException | MinioException e) {
             throw new PhotoException("Failed to save photo", e, 500);
         }
 

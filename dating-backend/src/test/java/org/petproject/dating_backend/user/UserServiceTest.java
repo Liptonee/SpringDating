@@ -27,28 +27,27 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
     private static final Long USER_ID = 123L;
 
-    @Mock private UserRepository userRepository;
-    @Mock private UserMapper userMapper;
-    @Mock private PhotoService photoService;
-    @Mock private MeterRegistry registry;
-    @Mock private Counter counter;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private UserMapper userMapper;
+    @Mock
+    private PhotoService photoService;
+    @Mock
+    private MeterRegistry registry;
+    @Mock
+    private Counter counter;
 
-    @InjectMocks private UserService userService;
+    @InjectMocks
+    private UserService userService;
 
     @BeforeEach
     void setUp() {
@@ -102,10 +101,6 @@ class UserServiceTest {
         lenient().when(userMapper.toProfileDto(any(UserEntity.class)))
                 .thenAnswer(inv -> toProfileDto(inv.getArgument(0)));
     }
-
-    // ======================================================================
-    // getCurrentUser
-    // ======================================================================
 
     @Nested
     class GetCurrentUserTest {
@@ -585,8 +580,15 @@ class UserServiceTest {
 
         private static UserRepository.UserNameProjection projection(Long id, String name) {
             return new UserRepository.UserNameProjection() {
-                @Override public Long getId() { return id; }
-                @Override public String getFirstName() { return name; }
+                @Override
+                public Long getId() {
+                    return id;
+                }
+
+                @Override
+                public String getFirstName() {
+                    return name;
+                }
             };
         }
     }
