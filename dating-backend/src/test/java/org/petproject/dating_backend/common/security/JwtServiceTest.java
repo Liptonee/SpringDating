@@ -1,68 +1,132 @@
 package org.petproject.dating_backend.common.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.petproject.dating_backend.user.UserEntity;
-import org.petproject.dating_backend.user.UserGender;
 import org.petproject.dating_backend.user.UserRole;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@ExtendWith(MockitoExtension.class)
 class JwtServiceTest {
 
-    private static final String BASE64_SECRET
-            = "N2YzYzRkNWU2ZjdhOGI5YzBkMWUyZjNhNGI1YzZkN2U4ZjlhMGIxYzJkM2U0ZjVhNmI3YzhkOWUwZjFhMmIzYzRkNWU2Zjc4";
-    private static final long TTL_MS = 3_600_000;
+    private static final Long USER_ID = 123L;
+    private static final String EMAIL = "ivan@example.com";
+
+    // Base64 от 32-байтового секрета: "12345678901234567890123456789012"
+    private static final String SECRET = "MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI=";
+    private static final Long EXPIRATION_MS = 60_000L;
 
     private JwtService jwtService;
 
     @BeforeEach
     void setUp() {
-        jwtService = new JwtService(BASE64_SECRET, TTL_MS);
+        jwtService = new JwtService(SECRET, EXPIRATION_MS);
     }
 
-    private static UserEntity readyUser() {
+    private static UserEntity user() {
         UserEntity u = new UserEntity();
-        u.setId(123L);
-        u.setFirstName("Иван");
-        u.setEmail("ivan@example.com");
-        u.setPasswordHash("hash");
-        u.setReadyForDeck(true);
-        u.setGender(UserGender.MALE);
-        u.setAge((short) 25);
-        u.setCity("Москва");
-        u.setShortAbout("Кратко");
-        u.setPreferredAgeMin((short) 20);
-        u.setPreferredAgeMax((short) 30);
-        u.setFullAbout("Полно");
+        u.setId(USER_ID);
+        u.setEmail(EMAIL);
         u.setRole(UserRole.USER);
         return u;
     }
 
     @Nested
-    class GenerateTokenTest{
+    class GenerateTokenTest {
 
         @Test
-        void returnsCorrectToken_correctInput() {
+        void generatesTokenWithSubjectUserIdAndRoles() {
+            UserEntity user = user();
 
-            String token = jwtService.generateToken(readyUser());
+            String token = jwtService.generateToken(user);
+
+            assertThat(token).isNotBlank();
+
             Claims claims = jwtService.parseClaims(token);
 
-            assertThat(claims.getSubject()).isEqualTo("ivan@example.com");
+            assertThat(claims.getSubject()).isEqualTo(EMAIL);
+            assertThat(claims.get(JwtClaims.USER_ID, Long.class)).isEqualTo(USER_ID);
             assertThat(claims.get(JwtClaims.ROLES, List.class))
-                    .containsExactly("USER");
-            assertThat(claims.get(JwtClaims.USER_ID, Long.class)).isEqualTo(123L);
+                    .containsExactly(UserRole.USER.name());
         }
 
+        @Test
+        void setsExpirationInFuture() {
+            String token = jwtService.generateToken(user());
 
+            Claims claims = jwtService.parseClaims(token);
 
+            assertThat(claims.getExpiration()).isAfter(claims.getIssuedAt());
+        }
     }
 
+    @Nested
+    class ExtractUserIdTest {
+
+        @Test
+        void returnsUserIdFromToken() {
+            String token = jwtService.generateToken(user());
+
+            Long result = jwtService.extractUserId(token);
+
+            assertThat(result).isEqualTo(USER_ID);
+        }
+    }
+
+    @Nested
+    class ExtractRolesTest {
+
+        @Test
+        void returnsRolesFromToken() {
+            String token = jwtService.generateToken(user());
+
+            List<String> result = jwtService.extractRoles(token);
+
+            assertThat(result).containsExactly(UserRole.USER.name());
+        }
+    }
+
+    @Nested
+    class ParseClaimsTest {
+
+        @Test
+        void returnsClaimsForValidToken() {
+            String token = jwtService.generateToken(user());
+
+            Claims claims = jwtService.parseClaims(token);
+
+            assertThat(claims.getSubject()).isEqualTo(EMAIL);
+            assertThat(claims.get(JwtClaims.USER_ID, Long.class)).isEqualTo(USER_ID);
+            assertThat(claims.get(JwtClaims.ROLES, List.class))
+                    .containsExactly(UserRole.USER.name());
+        }
+    }
+
+    @Nested
+    class IsExpiredTest {
+
+        @Test
+        void returnsFalseForValidToken() {
+            String token = jwtService.generateToken(user());
+
+            boolean result = jwtService.isExpired(token);
+
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        void throwsExpiredJwtExceptionWhenTokenExpired() {
+            JwtService expiredJwtService = new JwtService(SECRET, -1_000L);
+            String token = expiredJwtService.generateToken(user());
+
+            assertThatThrownBy(() -> jwtService.isExpired(token))
+                    .isInstanceOf(ExpiredJwtException.class);
+        }
+    }
 }
