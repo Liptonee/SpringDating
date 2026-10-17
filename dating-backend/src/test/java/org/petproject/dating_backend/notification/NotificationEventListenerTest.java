@@ -73,9 +73,9 @@ class NotificationEventListenerTest {
             String title = "Title for match created";
             String baseBody = "Congratulations! Body for match created. ";
 
-            verify(sender).send(USER_A, title,
+            verify(sender).send(eq(USER_A), eq(title),
                     eq(baseBody + "User1=" + USER_A + "User2=" + USER_B));
-            verify(sender).send(USER_B, title,
+            verify(sender).send(eq(USER_B), eq(title),
                     eq(baseBody + "User1=" + USER_B + "User2=" + USER_A));
         }
     }
