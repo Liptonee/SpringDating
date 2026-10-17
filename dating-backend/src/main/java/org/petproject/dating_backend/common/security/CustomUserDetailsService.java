@@ -2,12 +2,12 @@ package org.petproject.dating_backend.common.security;
 
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
+import org.petproject.dating_backend.common.exception.NotFoundException;
 import org.petproject.dating_backend.user.UserEntity;
 import org.petproject.dating_backend.user.UserRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -22,11 +22,11 @@ public class CustomUserDetailsService implements UserDetailsService {
 
 
     @Override
-    public CustomUserDetails loadUserByUsername(@NonNull String username)
-            throws UsernameNotFoundException {
+    public @NonNull CustomUserDetails loadUserByUsername(@NonNull String username)
+            throws NotFoundException {
 
         UserEntity user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден", 404));
 
         List<GrantedAuthority> authorities = new ArrayList<>(1);
 
