@@ -16,10 +16,15 @@ import java.util.List;
 public class JwtService {
 
     @Value("${jwt.secret}")
-    private String secret;
+    private final String secret;
 
     @Value("${jwt.expiration.access}")
-    private Long expiration;
+    private final Long expiration;
+
+    public JwtService(@Value("${jwt.secret}") String secret, @Value("${jwt.expiration.access}") Long expiration) {
+        this.secret = secret;
+        this.expiration = expiration;
+    }
 
     public String generateToken(UserEntity user) {
         return Jwts.builder()
@@ -54,7 +59,7 @@ public class JwtService {
     }
 
 
-    protected SecretKey getSignKey() {
+    private SecretKey getSignKey() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
     }
 
