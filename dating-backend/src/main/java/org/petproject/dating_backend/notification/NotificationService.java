@@ -32,7 +32,6 @@ public class NotificationService {
                 "type", requestDto.type().name()).increment();
     }
 
-
     @Transactional
     public void read(Long curUserId, Long notifId) {
         NotificationEntity entity = notificationRepository.findById(notifId).orElseThrow(
@@ -47,6 +46,7 @@ public class NotificationService {
             notificationRepository.save(entity);
             registry.counter("notifications.read.total").increment();
         }
+
     }
 
     @Transactional(readOnly = true)
@@ -54,18 +54,15 @@ public class NotificationService {
         NotificationEntity entity = notificationRepository.findById(notifId).orElseThrow(
                 () -> new NotFoundException("Уведомления с таким id не существует", 404)
         );
-
         if (!entity.getUserId().equals(curUserId)) {
             throw new ForbiddenException("Вы не можете просмотреть чужое уведомление", 403);
         }
-
 
         return notificationMapper.toResponse(entity);
     }
 
     @Transactional(readOnly = true)
     public Page<NotificationResponseDto> getNotifications(Long curUserId, Boolean read, Pageable pageable) {
-
         return notificationRepository.findAllByUserId(curUserId, read, pageable)
                 .map(notificationMapper::toResponse);
 
