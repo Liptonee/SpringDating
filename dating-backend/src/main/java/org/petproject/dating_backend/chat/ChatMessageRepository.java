@@ -31,6 +31,4 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, 
                                      Pageable pageable);
 
 
-    long countByRoomId(Long roomId);
-
 }
