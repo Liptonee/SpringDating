@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
@@ -33,11 +34,26 @@ public interface PhotoRepository extends JpaRepository<PhotoEntity, Long> {
     @Modifying
     @Query("""
             UPDATE PhotoEntity p
-            SET p.isMain = CASE WHEN p.id = :photoId THEN true ELSE false END
+            SET p.isMain = false
             WHERE p.userId = :userId
-              AND (p.isMain = true OR p.id = :photoId)
+              AND p.isMain = true
+              AND p.id <> :photoId
             """)
-    void setNewMainPhoto(@Param("userId") Long userId, @Param("photoId") Long photoId);
+    void unsetMainPhoto(@Param("userId") Long userId, @Param("photoId") Long photoId);
+
+    @Modifying
+    @Query("""
+            UPDATE PhotoEntity p
+            SET p.isMain = true
+            WHERE p.id = :photoId AND p.userId = :userId
+            """)
+    void markAsMain(@Param("userId") Long userId, @Param("photoId") Long photoId);
+
+    @Transactional
+    default void setNewMainPhoto(Long userId, Long photoId) {
+        unsetMainPhoto(userId, photoId);
+        markAsMain(userId, photoId);
+    }
 
     @Query("SELECT p FROM PhotoEntity p WHERE p.isMain = true AND p.userId IN :userIds")
     List<PhotoEntity> findMainPhotosByUserIds(@Param("userIds") Collection<Long> userIds);
