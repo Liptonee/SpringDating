@@ -194,7 +194,7 @@
 			<artifactId>testcontainers-bom</artifactId>
 			<version>${testcontainers.version}</version>
 			<type>pom</type>
-			<scope>import</scope>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>
