@@ -128,14 +128,14 @@ class UserControllerTest {
                 USER_ID, "Иван", "ivan@example.com", "short", "full",
                 (short) 26, "Москва", UserGender.MALE, (short) 20, (short) 30, true
         );
-        when(userService.patchCurrentUser(eq(USER_ID), any(ProfileUserDto.class)))
+        when(userService.patchCurrentUser(eq(USER_ID), any(PatchRequestDto.class)))
                 .thenReturn(response);
 
         assertThat(mvc.patch().uri("/api/users/me")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                        {"firstName":"Иван","age":26}
-                        """))
+                    {"firstName":"Иван","age":26}
+                    """))
                 .hasStatusOk()
                 .bodyJson()
                 .extractingPath("$.age").isEqualTo(26);
@@ -146,23 +146,30 @@ class UserControllerTest {
         assertThat(mvc.patch().uri("/api/users/me")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                        {"age":17}
-                        """))
+                    {"age":17}
+                    """))
                 .hasStatus(HttpStatus.BAD_REQUEST)
                 .bodyJson()
                 .extractingPath("$.title").isEqualTo("Validation failed.");
     }
 
     @Test
-    void patchCurrentUser_idMustBeNull_returnsBadRequest() {
+    void patchCurrentUser_idInRequest_isIgnoredByJackson() {
+        // id не является полем PatchRequestDto → игнорируется Jackson'ом
+        // (Spring Boot по умолчанию: spring.jackson.deserialization.fail-on-unknown-properties=false)
+        ProfileUserDto response = new ProfileUserDto(
+                USER_ID, "Иван", "ivan@example.com", null, null,
+                null, null, null, null, null, false
+        );
+        when(userService.patchCurrentUser(eq(USER_ID), any(PatchRequestDto.class)))
+                .thenReturn(response);
+
         assertThat(mvc.patch().uri("/api/users/me")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                        {"id":5,"firstName":"Иван"}
-                        """))
-                .hasStatus(HttpStatus.BAD_REQUEST)
-                .bodyJson()
-                .extractingPath("$.title").isEqualTo("Validation failed.");
+                    {"id":5,"firstName":"Иван"}
+                    """))
+                .hasStatusOk();
     }
 
 

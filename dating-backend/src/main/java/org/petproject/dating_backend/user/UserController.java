@@ -55,9 +55,9 @@ public class UserController {
     @PatchMapping("/me")
     public ResponseEntity<ProfileUserDto> patchCurrentUser(
             @AuthenticationPrincipal Long curUserId,
-            @RequestBody @Valid ProfileUserDto patchProfileUserDto
+            @RequestBody @Valid PatchRequestDto patchRequestDto
     ) {
-        return ResponseEntity.ok(userService.patchCurrentUser(curUserId, patchProfileUserDto));
+        return ResponseEntity.ok(userService.patchCurrentUser(curUserId, patchRequestDto));
     }
 
 

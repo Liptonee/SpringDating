@@ -47,50 +47,49 @@ public class UserService {
             put = @CachePut(value = CACHE_NAME, key = "'profile:' + #curUserId"),
             evict = @CacheEvict(value = CACHE_NAME, key = "'get:' + #curUserId")
     )
-    public ProfileUserDto patchCurrentUser(Long curUserId, ProfileUserDto patchProfileUserDto) {
+    public ProfileUserDto patchCurrentUser(Long curUserId, PatchRequestDto patchRequestDto) {
 
         UserEntity userEntity = userRepository.findByIdForUpdate(curUserId).orElseThrow(
                 () -> new NotFoundException("Пользователь не найден", 404)
         );
 
-        if (patchProfileUserDto.firstName() != null && !patchProfileUserDto.firstName().isBlank()) {
-            userEntity.setFirstName(patchProfileUserDto.firstName());
+        if (patchRequestDto.firstName() != null && !patchRequestDto.firstName().isBlank()) {
+            userEntity.setFirstName(patchRequestDto.firstName());
         }
-        if (patchProfileUserDto.age() != null) {
-            userEntity.setAge(patchProfileUserDto.age());
+        if (patchRequestDto.age() != null) {
+            userEntity.setAge(patchRequestDto.age());
         }
-        if (patchProfileUserDto.email() != null && !patchProfileUserDto.email().isBlank()) {
-            String normalizeEmail = patchProfileUserDto.email().toLowerCase().trim();
+        if (patchRequestDto.email() != null && !patchRequestDto.email().isBlank()) {
+            String normalizeEmail = patchRequestDto.email().toLowerCase().trim();
             if (userRepository.existsByEmailAndIdNot(normalizeEmail, curUserId)) {
                 throw new ConflictException("Такой email уже существует", 409);
             }
             userEntity.setEmail(normalizeEmail);
         }
-        if (patchProfileUserDto.city() != null && !patchProfileUserDto.city().isBlank()) {
-            userEntity.setCity(patchProfileUserDto.city());
+        if (patchRequestDto.city() != null && !patchRequestDto.city().isBlank()) {
+            userEntity.setCity(patchRequestDto.city());
         }
-        if (patchProfileUserDto.gender() != null) {
-            userEntity.setGender(patchProfileUserDto.gender());
+        if (patchRequestDto.gender() != null) {
+            userEntity.setGender(patchRequestDto.gender());
         }
-        if (patchProfileUserDto.shortAbout() != null) {
-            userEntity.setShortAbout(patchProfileUserDto.shortAbout());
+        if (patchRequestDto.shortAbout() != null) {
+            userEntity.setShortAbout(patchRequestDto.shortAbout());
         }
-        if (patchProfileUserDto.fullAbout() != null) {
-            userEntity.setFullAbout(patchProfileUserDto.fullAbout());
+        if (patchRequestDto.fullAbout() != null) {
+            userEntity.setFullAbout(patchRequestDto.fullAbout());
         }
 
-        Short newMin = patchProfileUserDto.preferredAgeMin() != null
-                ? patchProfileUserDto.preferredAgeMin()
+        Short newMin = patchRequestDto.preferredAgeMin() != null
+                ? patchRequestDto.preferredAgeMin()
                 : userEntity.getPreferredAgeMin();
-        Short newMax = patchProfileUserDto.preferredAgeMax() != null
-                ? patchProfileUserDto.preferredAgeMax()
+        Short newMax = patchRequestDto.preferredAgeMax() != null
+                ? patchRequestDto.preferredAgeMax()
                 : userEntity.getPreferredAgeMax();
         if (newMin != null && newMax != null && newMin > newMax) {
             throw new BadRequestException("Минимум диапазона возраста должен быть <= максимума", 400);
         }
         userEntity.setPreferredAgeMin(newMin);
         userEntity.setPreferredAgeMax(newMax);
-
 
         if (getNotReadyFields(curUserId).isEmpty()) {
             userEntity.setReadyForDeck(true);

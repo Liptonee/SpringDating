@@ -79,9 +79,8 @@ class UserServiceTest {
         return u;
     }
 
-    private static ProfileUserDto emptyPatch() {
-        return new ProfileUserDto(null, null, null, null, null, null,
-                null, null, null, null, null);
+    private static PatchRequestDto emptyPatch() {
+        return new PatchRequestDto(null, null, null, null, null, null, null, null, null);
     }
 
     private static ProfileUserDto toProfileDto(UserEntity e) {
@@ -201,8 +200,8 @@ class UserServiceTest {
             UserEntity existing = readyUser();
             stubSuccessfulPatch(existing, false);
 
-            ProfileUserDto patch = new ProfileUserDto(
-                    null, "Пётр", null, null, null, null, null, null, null, null, null);
+            PatchRequestDto patch = new PatchRequestDto(
+                    "Пётр", null, null, null, null, null, null, null, null);
 
             userService.patchCurrentUser(USER_ID, patch);
 
@@ -215,8 +214,8 @@ class UserServiceTest {
             UserEntity existing = readyUser();
             stubSuccessfulPatch(existing, false);
 
-            ProfileUserDto patch = new ProfileUserDto(
-                    null, "   ", null, null, null, null, null, null, null, null, null);
+            PatchRequestDto patch = new PatchRequestDto(
+                    "   ", null, null, null, null, null, null, null, null);
 
             userService.patchCurrentUser(USER_ID, patch);
 
@@ -228,8 +227,8 @@ class UserServiceTest {
             UserEntity existing = readyUser();
             stubSuccessfulPatch(existing, false);
 
-            ProfileUserDto patch = new ProfileUserDto(
-                    null, null, null, "", null, null, null, null, null, null, null);
+            PatchRequestDto patch = new PatchRequestDto(
+                    null, null, "", null, null, null, null, null, null);
 
             userService.patchCurrentUser(USER_ID, patch);
 
@@ -241,9 +240,9 @@ class UserServiceTest {
             UserEntity existing = readyUser();
             stubSuccessfulPatch(existing, false);
 
-            ProfileUserDto patch = new ProfileUserDto(
-                    null, "Пётр", null, "Новое кратко", "Новое полно",
-                    (short) 30, "Питер", UserGender.FEMALE, (short) 25, (short) 35, null);
+            PatchRequestDto patch = new PatchRequestDto(
+                    "Пётр", null, "Новое кратко", "Новое полно",
+                    (short) 30, "Питер", UserGender.FEMALE, (short) 25, (short) 35);
 
             userService.patchCurrentUser(USER_ID, patch);
 
@@ -264,9 +263,8 @@ class UserServiceTest {
             when(userRepository.existsByEmailAndIdNot("new@example.com", USER_ID))
                     .thenReturn(false);
 
-            ProfileUserDto patch = new ProfileUserDto(
-                    null, null, "  New@Example.COM  ", null, null, null,
-                    null, null, null, null, null);
+            PatchRequestDto patch = new PatchRequestDto(
+                    null, "  New@Example.COM  ", null, null, null, null, null, null, null);
 
             userService.patchCurrentUser(USER_ID, patch);
 
@@ -281,9 +279,8 @@ class UserServiceTest {
             when(userRepository.existsByEmailAndIdNot("busy@example.com", USER_ID))
                     .thenReturn(true);
 
-            ProfileUserDto patch = new ProfileUserDto(
-                    null, null, "busy@example.com", null, null, null,
-                    null, null, null, null, null);
+            PatchRequestDto patch = new PatchRequestDto(
+                    null, "busy@example.com", null, null, null, null, null, null, null);
 
             assertThatThrownBy(() -> userService.patchCurrentUser(USER_ID, patch))
                     .isInstanceOf(ConflictException.class)
@@ -298,8 +295,8 @@ class UserServiceTest {
             UserEntity existing = readyUser();
             stubSuccessfulPatch(existing, false);
 
-            ProfileUserDto patch = new ProfileUserDto(
-                    null, null, "   ", null, null, null, null, null, null, null, null);
+            PatchRequestDto patch = new PatchRequestDto(
+                    null, "   ", null, null, null, null, null, null, null);
 
             userService.patchCurrentUser(USER_ID, patch);
 
@@ -312,9 +309,8 @@ class UserServiceTest {
             UserEntity existing = readyUser();
             when(userRepository.findByIdForUpdate(USER_ID)).thenReturn(Optional.of(existing));
 
-            ProfileUserDto patch = new ProfileUserDto(
-                    null, null, null, null, null, null, null, null,
-                    (short) 30, (short) 20, null);
+            PatchRequestDto patch = new PatchRequestDto(
+                    null, null, null, null, null, null, null, (short) 30, (short) 20);
 
             assertThatThrownBy(() -> userService.patchCurrentUser(USER_ID, patch))
                     .isInstanceOf(BadRequestException.class)
@@ -328,10 +324,8 @@ class UserServiceTest {
             UserEntity existing = readyUser(); // min=20, max=30
             when(userRepository.findByIdForUpdate(USER_ID)).thenReturn(Optional.of(existing));
 
-            // newMin = 20 (из сущности), newMax = 15 (из патча)
-            ProfileUserDto patch = new ProfileUserDto(
-                    null, null, null, null, null, null, null, null,
-                    null, (short) 15, null);
+            PatchRequestDto patch = new PatchRequestDto(
+                    null, null, null, null, null, null, null, null, (short) 15);
 
             assertThatThrownBy(() -> userService.patchCurrentUser(USER_ID, patch))
                     .isInstanceOf(BadRequestException.class)
@@ -345,10 +339,8 @@ class UserServiceTest {
             UserEntity existing = readyUser(); // min=20, max=30
             when(userRepository.findByIdForUpdate(USER_ID)).thenReturn(Optional.of(existing));
 
-            // newMin = 50 (из патча), newMax = 30 (из сущности)
-            ProfileUserDto patch = new ProfileUserDto(
-                    null, null, null, null, null, null, null, null,
-                    (short) 50, null, null);
+            PatchRequestDto patch = new PatchRequestDto(
+                    null, null, null, null, null, null, null, (short) 50, null);
 
             assertThatThrownBy(() -> userService.patchCurrentUser(USER_ID, patch))
                     .isInstanceOf(BadRequestException.class)
@@ -359,7 +351,7 @@ class UserServiceTest {
 
         @Test
         void setsReadyForDeckTrue_whenProfileIsCompleteAndHasPhoto() {
-            UserEntity existing = readyUser(); // все поля заполнены
+            UserEntity existing = readyUser();
             existing.setReadyForDeck(false);
             stubSuccessfulPatch(existing, true);
 
