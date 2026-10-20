@@ -217,6 +217,10 @@ public class PhotoService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = CACHE_NAME, key = "'list:' + #curUserId"),
+            @CacheEvict(value = CACHE_NAME, key = "'hasMain:' + #curUserId")
+    })
     public void setMainPhoto(Long curUserId, Long photoId) {
         PhotoEntity photo = photoRepository.findById(photoId).orElseThrow(
                 () -> new NotFoundException("Фото с таким id не существует", 404)
