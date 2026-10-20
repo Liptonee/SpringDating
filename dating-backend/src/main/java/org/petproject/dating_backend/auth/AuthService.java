@@ -10,6 +10,7 @@ import org.petproject.dating_backend.common.security.RefreshTokenService;
 import org.petproject.dating_backend.user.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -56,9 +57,14 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public AuthTokens login(LoginRequestDto request) {
+        String normalizedEmail = request.email().toLowerCase().trim();
+        if (!userRepository.existsByEmail(normalizedEmail)) {
+            throw new BadCredentialsException("Такого email не существует");
+        }
+
         Authentication authentication = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.email(),
+                        normalizedEmail,
                         request.password()
                 )
         );

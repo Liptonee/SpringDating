@@ -33,7 +33,7 @@ public class AuthController {
             summary = "Регистрация",
             description = """
                     Регистрирует пользователя по email и паролю.
-                    Также необходимо имя и пол.
+                    Также необходимо имя.
                     """
     )
     @ApiResponse(responseCode = "201", description = "Регистрация прошла успешно",
@@ -101,7 +101,7 @@ public class AuthController {
                     и возвращает чистые cookie с пустым телом.
                     При этом access токен всё ещё валиден до истечения TTL.
                     """)
-    @ApiResponse(responseCode = "200", description = "Логаут успешно выполнен")
+    @ApiResponse(responseCode = "204", description = "Логаут успешно выполнен")
     @ApiResponse(responseCode = "401", description = "Refresh не предоставлен",
             content = @Content(schema = @Schema(implementation = ErrorDto.class)))
     @PostMapping("/logout")
