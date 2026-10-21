@@ -17,7 +17,7 @@ class SwipeNegativeIT extends BaseIntegrationTest {
     void swipe_self_returns400_and_noSideEffects() {
         Long userId = registerAndGetId("self@mail.com", "Self", PASSWORD);
         String token = loginAndGetAccessToken("self@mail.com", PASSWORD);
-        patch(token);
+        completeUser(token);
         saveMockPhoto(userId);
 
         restTestClient.post()
@@ -38,7 +38,7 @@ class SwipeNegativeIT extends BaseIntegrationTest {
     void swipe_nonExistentUser_returns404_and_noSideEffects() {
         Long userId = registerAndGetId("user1@mail.com", "User1", PASSWORD);
         String token = loginAndGetAccessToken("user1@mail.com", PASSWORD);
-        patch(token);
+        completeUser(token);
         saveMockPhoto(userId);
 
         restTestClient.post()
@@ -78,19 +78,4 @@ class SwipeNegativeIT extends BaseIntegrationTest {
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM notifications", Integer.class)).isZero();
     }
 
-    private void patch(String token) {
-        PatchRequestDto patchReq = new PatchRequestDto(null, null,
-                "шорт", "фул",
-                (short) 25, "город",
-                UserGender.MALE, (short) 20, (short) 30);
-
-        restTestClient.patch()
-                .uri("/api/users/me")
-                .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .body(patchReq)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody(ProfileUserDto.class);
-    }
 }

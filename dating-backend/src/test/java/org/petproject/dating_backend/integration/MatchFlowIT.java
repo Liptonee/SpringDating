@@ -11,9 +11,6 @@ import org.petproject.dating_backend.notification.NotificationType;
 import org.petproject.dating_backend.swipe.SwipeAction;
 import org.petproject.dating_backend.swipe.SwipeRequestDto;
 import org.petproject.dating_backend.swipe.SwipeResponseDto;
-import org.petproject.dating_backend.user.PatchRequestDto;
-import org.petproject.dating_backend.user.ProfileUserDto;
-import org.petproject.dating_backend.user.UserGender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -35,11 +32,11 @@ class MatchFlowIT extends BaseIntegrationTest {
     void should_createMatch_when_bothUsersLikeEachOther() {
         Long firstUserId = registerAndGetId("firstIvan@mail.com", "Ivan", PASSWORD);
         String firstToken = loginAndGetAccessToken("firstIvan@mail.com", PASSWORD);
-        patch(firstToken);
+        completeUser(firstToken);
         saveMockPhoto(firstUserId);
         Long secondUserId = registerAndGetId("secondVika@mail.com", "Vika", PASSWORD);
         String secondToken = loginAndGetAccessToken("secondVika@mail.com", PASSWORD);
-        patch(secondToken);
+        completeUser(secondToken);
         saveMockPhoto(secondUserId);
 
         //from first to second LIKE
@@ -94,21 +91,5 @@ class MatchFlowIT extends BaseIntegrationTest {
                 );
     }
 
-    void patch(String token) {
-        PatchRequestDto patchReq = new PatchRequestDto(null, null,
-                "шорт", "фул",
-                (short) 25, "город",
-                UserGender.MALE, (short) 20, (short) 30);
-
-        restTestClient.patch()
-                .uri("/api/users/me")
-                .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .body(patchReq)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody(ProfileUserDto.class);
-
-    }
 
 }

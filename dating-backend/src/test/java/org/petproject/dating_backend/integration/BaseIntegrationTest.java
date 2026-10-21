@@ -7,7 +7,9 @@ import org.petproject.dating_backend.auth.LoginRequestDto;
 import org.petproject.dating_backend.auth.RegisterRequestDto;
 import org.petproject.dating_backend.photo.PhotoEntity;
 import org.petproject.dating_backend.photo.PhotoRepository;
+import org.petproject.dating_backend.user.PatchRequestDto;
 import org.petproject.dating_backend.user.ProfileUserDto;
+import org.petproject.dating_backend.user.UserGender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,6 +18,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
@@ -139,6 +142,23 @@ public abstract class BaseIntegrationTest {
         Optional.ofNullable(cacheManager.getCache("photos")).ifPresent(Cache::clear);
     }
 
+    protected void completeUser(String token) {
+
+        PatchRequestDto patchReq = new PatchRequestDto(null, null,
+                "шорт", "фул",
+                (short) 25, "город",
+                UserGender.MALE, (short) 20, (short) 30);
+
+        restTestClient.patch()
+                .uri("/api/users/me")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .body(patchReq)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(ProfileUserDto.class);
+
+    }
 
     @AfterEach
     protected void cleanUp() {
