@@ -57,9 +57,7 @@ class AuthFlowIT extends BaseIntegrationTest {
         assertThat(refreshToken).isNotBlank();
         assertThat(logResponse).isNotNull();
         assertThat(logResponse.token()).isNotBlank();
-        Set<String> keys = redisTemplate.keys("refresh:*");
-        assertThat(keys.size()).isEqualTo(1);
-
+        assertThat(redisTemplate.keys("refresh:*")).hasSize(1);
         //access token
         String accessToken = logResponse.token();
 

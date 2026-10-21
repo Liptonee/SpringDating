@@ -7,10 +7,12 @@ import org.petproject.dating_backend.auth.LoginRequestDto;
 import org.petproject.dating_backend.auth.RegisterRequestDto;
 import org.petproject.dating_backend.photo.PhotoEntity;
 import org.petproject.dating_backend.photo.PhotoRepository;
+import org.petproject.dating_backend.user.ProfileUserDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -21,6 +23,8 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -58,6 +62,20 @@ public abstract class BaseIntegrationTest {
     @Autowired
     protected RestTestClient restTestClient;
 
+    protected Long registerAndGetId(String email, String firstName, String rawPassword) {
+        RegisterRequestDto request = new RegisterRequestDto(email, firstName, rawPassword);
+
+        return restTestClient.post()
+                .uri("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(request)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody(ProfileUserDto.class)
+                .returnResult()
+                .getResponseBody().id();
+    }
+
     protected void register(String email, String firstName, String rawPassword) {
         RegisterRequestDto request = new RegisterRequestDto(email, firstName, rawPassword);
 
@@ -66,7 +84,8 @@ public abstract class BaseIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(request)
                 .exchange()
-                .expectStatus().isCreated();
+                .expectStatus().isCreated()
+                .expectBody(ProfileUserDto.class);
     }
 
     protected String loginAndGetAccessToken(String email, String password) {
@@ -108,16 +127,16 @@ public abstract class BaseIntegrationTest {
         return refreshToken;
     }
 
-    void saveMockPhoto(Long userId) {
+    protected void saveMockPhoto(Long userId) {
         PhotoEntity photo = new PhotoEntity();
-        photo.setContentType("mock");
         photo.setMain(true);
-        photo.setObjectName("mock");
-        photo.setOriginalName("mock");
+        photo.setContentType(userId + "mock");
+        photo.setObjectName(userId + "mock");
+        photo.setOriginalName(userId + "mock");
         photo.setUserId(userId);
-        photo.setSize(10L);
+        photo.setSize(userId + 10L);
         photoRepository.save(photo);
-        cacheManager.getCache("photos").clear();
+        Optional.ofNullable(cacheManager.getCache("photos")).ifPresent(Cache::clear);
     }
 
 

@@ -50,7 +50,10 @@ class PatchFlowIT extends BaseIntegrationTest {
                 .body(patchReq)
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody(ProfileUserDto.class);
+                .expectBody(ProfileUserDto.class)
+                .consumeWith(result -> {
+                    assertThat(result.getResponseBody().id()).isEqualTo(1L);
+                });
 
         Set<String> photoNotReady = restTestClient.get()
                 .uri("/api/users/me/completeness")
