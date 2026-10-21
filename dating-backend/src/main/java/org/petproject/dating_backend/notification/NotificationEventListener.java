@@ -13,7 +13,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 @RequiredArgsConstructor
-@Async
+@Async("notificationExecutor")
 public class NotificationEventListener {
 
 
