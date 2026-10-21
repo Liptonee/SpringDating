@@ -3,9 +3,6 @@ package org.petproject.dating_backend.integration;
 import org.junit.jupiter.api.Test;
 import org.petproject.dating_backend.swipe.SwipeAction;
 import org.petproject.dating_backend.swipe.SwipeRequestDto;
-import org.petproject.dating_backend.user.PatchRequestDto;
-import org.petproject.dating_backend.user.ProfileUserDto;
-import org.petproject.dating_backend.user.UserGender;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 

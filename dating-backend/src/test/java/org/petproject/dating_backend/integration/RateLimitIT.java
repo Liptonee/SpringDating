@@ -2,10 +2,10 @@ package org.petproject.dating_backend.integration;
 
 import org.junit.jupiter.api.Test;
 
-class RateLimitIT extends BaseIntegrationTest{
+class RateLimitIT extends BaseIntegrationTest {
 
     @Test
-    void returns429_whenManyRequests () {
+    void returns429_whenManyRequests() {
 
         for (int i = 0; i < 20; i++) {
             restTestClient.post()
