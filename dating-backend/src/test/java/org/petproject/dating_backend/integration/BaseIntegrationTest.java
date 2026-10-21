@@ -5,10 +5,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.petproject.dating_backend.auth.AuthResponseDto;
 import org.petproject.dating_backend.auth.LoginRequestDto;
 import org.petproject.dating_backend.auth.RegisterRequestDto;
+import org.petproject.dating_backend.photo.PhotoEntity;
+import org.petproject.dating_backend.photo.PhotoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
@@ -27,6 +30,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 public abstract class BaseIntegrationTest {
 
+    @Autowired
+    private PhotoRepository photoRepository;
+    @Autowired
+    private CacheManager cacheManager;
 
     protected static final String EMAIL = "TeStEMAIl@example.com";
     protected static final String FIRST_NAME = "Ivan";
@@ -99,6 +106,18 @@ public abstract class BaseIntegrationTest {
         assertThat(refreshToken).isNotBlank();
 
         return refreshToken;
+    }
+
+    void saveMockPhoto(Long userId) {
+        PhotoEntity photo = new PhotoEntity();
+        photo.setContentType("mock");
+        photo.setMain(true);
+        photo.setObjectName("mock");
+        photo.setOriginalName("mock");
+        photo.setUserId(userId);
+        photo.setSize(10L);
+        photoRepository.save(photo);
+        cacheManager.getCache("photos").clear();
     }
 
 

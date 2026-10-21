@@ -2,13 +2,9 @@ package org.petproject.dating_backend.integration;
 
 import org.junit.jupiter.api.Test;
 import org.petproject.dating_backend.deck.CardDto;
-import org.petproject.dating_backend.photo.PhotoEntity;
-import org.petproject.dating_backend.photo.PhotoRepository;
 import org.petproject.dating_backend.user.PatchRequestDto;
 import org.petproject.dating_backend.user.ProfileUserDto;
 import org.petproject.dating_backend.user.UserGender;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.CacheManager;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -20,10 +16,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class PatchFlowIT extends BaseIntegrationTest {
 
-    @Autowired
-    private PhotoRepository photoRepository;
-    @Autowired
-    private CacheManager cacheManager;
 
     @Test
     void shouldCorrectProcess_whenCorrectInputPatch() {
@@ -106,15 +98,4 @@ class PatchFlowIT extends BaseIntegrationTest {
     }
 
 
-    void saveMockPhoto(Long userId) {
-        PhotoEntity photo = new PhotoEntity();
-        photo.setContentType("mock");
-        photo.setMain(true);
-        photo.setObjectName("mock");
-        photo.setOriginalName("mock");
-        photo.setUserId(userId);
-        photo.setSize(10L);
-        photoRepository.save(photo);
-        cacheManager.getCache("photos").clear();
-    }
 }
