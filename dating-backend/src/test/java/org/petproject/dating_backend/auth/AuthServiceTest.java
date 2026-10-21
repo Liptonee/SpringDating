@@ -179,6 +179,7 @@ class AuthServiceTest {
             stubAuthentication(user);
             when(jwtService.generateToken(user)).thenReturn("access-token");
             when(refreshTokenService.generateToken()).thenReturn("refresh-token");
+            when(userRepository.existsByEmail(EMAIL)).thenReturn(true);
 
             AuthTokens tokens = authService.login(new LoginRequestDto(EMAIL, PASSWORD));
 
